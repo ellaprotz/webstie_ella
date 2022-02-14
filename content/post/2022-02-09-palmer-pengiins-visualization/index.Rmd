@@ -9,3 +9,23 @@ tags:
   - Penguins
   - GGPLOT2
 ---
+```{r}
+library(palmerpenguins)
+glimpse(penguins)
+```
+
+Start with the penguins data frame, map bill depth to the x-axis and map bill length to the y-axis. Represent each observation with a point and map species to the colour of each point. Title the plot "Bill depth and length", add the subtitle "Dimensions for Adelie, Chinstrap, and Gentoo Penguins", label the x and y axes as "Bill depth (mm)" and "Bill length (mm)", respectively, label the legend "Species", and add a caption for the data source. Finally, use a discrete colour scale that is designed to be perceived by viewers with common forms of colour blindness.
+```{r}
+ggplot(data = penguins,
+       mapping = aes(x = bill_depth_mm,
+                     y = bill_length_mm,
+                     colour = species)) +
+  geom_point() +
+  labs(title = "Bill depth and length",
+       subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo Penguins",
+       x = "Bill depth (mm)", y = "Bill length (mm)",
+       colour = "Species",
+       caption = "Source: Palmer Station LTER / palmerpenguins package") +
+  scale_colour_viridis_d()
+```
+

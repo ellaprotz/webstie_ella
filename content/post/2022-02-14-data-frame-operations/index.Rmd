@@ -1,0 +1,159 @@
+---
+title: Data Frame Operations
+author: R package build
+date: '2022-02-14'
+slug: data-frame-operations
+categories: []
+tags: []
+---
+
+## Import from Github
+
+### Call Libraries 
+```{r}
+library(tidyverse)
+```
+
+```{r}
+url <- 'https://raw.githubusercontent.com/ellaprotz/tidyverse/main/hotels.csv'
+hotels <- read_csv(url)
+names(hotels)
+```
+
+##Summary of variables
+```{r}
+glimpse(hotels)
+```
+
+
+## Select to keep variables
+```{r}
+hotels %>%
+  select(hotel, lead_time)
+```
+
+## Select to exclude variables
+```{r}
+hotels %>%
+  select(hotel:arrival_date_month)
+```
+
+## select a range of variables
+```{r}
+hotels %>%
+  select(hotel:arrival_date_month)
+```
+
+## Select variables with certain characteristics
+```{r}
+hotels %>%
+  select(starts_with("arrival"))
+```
+
+```{r}
+hotels %>%
+  select(ends_with("type"))
+```
+
+## slice for certain row numbers
+```{r}
+# first five
+hotels %>%
+  slice(1:5)
+```
+
+In R, you can use the # for adding comments to your code. Any text following # will be printed as is, and won't be run as R code. This is useful for leaving comments in your code and for temporarily disabling certain lines of code while debugging.
+```{r}
+hotels %>%
+  # slice the first five rows  # this line is a comment
+  #select(hotel) %>%           # this one doesn't run
+  slice(1:5)                   # this line runs
+```
+
+## Filter to select a subset of rows
+```{r}
+hotels %>%
+  filter(hotel == "City Hotel")
+```
+
+## filter for complex conditions
+```{r}
+hotels %>%
+  filter( 
+    adults == 0,     
+    children >= 1 | babies >= 1     # | means or
+    ) %>%
+  select(adults, babies, children)
+```
+
+## distinct to filter for unique rows
+```{r}
+hotels %>% 
+  distinct(hotel, market_segment) %>%
+  arrange(hotel, market_segment)
+```
+
+
+## count and arrange
+```{r}
+hotels %>%
+  count(market_segment) %>%
+  arrange(desc(n))
+```
+
+##count for multiple variables
+```{r}
+hotels %>%
+  count(hotel, market_segment)
+```
+
+## mutate to add another variable 
+```{r}
+hotels %>%
+  mutate(little_ones = children + babies) %>%
+  select(children, babies, little_ones) %>%
+  arrange(desc(little_ones))
+```
+
+## Resort Hotel
+```{r}
+# Resort Hotel
+hotels %>%
+  mutate(little_ones = children + babies) %>%
+  filter(
+    little_ones >= 1,
+    hotel == "Resort Hotel"
+    ) %>%
+  select(hotel, little_ones)
+```
+
+## City Hotels 
+```{r}
+hotels %>%
+  mutate(little_ones = children + babies) %>%
+  filter(
+    little_ones >= 1,
+    hotel == "City Hotel"
+    )  %>%
+  select(hotel, little_ones)
+```
+
+## group_by for grouped operations
+## mean average daily rate for all booking at city and resort hotels
+```{r}
+hotels %>%
+  group_by(hotel) %>%
+  summarise(mean_adr = mean(adr))
+```
+
+## Summarize
+```{r}
+hotels %>%
+  summarise(
+    min_adr = min(adr),
+    mean_adr = mean(adr),
+    median_adr = median(adr),
+    max_adr = max(adr)
+    )
+```
+
