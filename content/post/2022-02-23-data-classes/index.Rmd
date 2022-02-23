@@ -1,0 +1,150 @@
+---
+title: Data Classes
+author: R package build
+date: '2022-02-23'
+slug: data-classes
+categories: []
+tags: []
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+#R uses factors to handle categorical variables, variables that have a fixed and known set of possible values
+x <- factor(c("BS", "MS", "PhD", "MS"))
+x
+```
+
+```{r}
+typeof(x)
+class(x)
+glimpse(x)
+as.integer(x)
+```
+#Dates
+```{r}
+y <- as.Date("2020-01-01")
+y
+typeof(y)
+class(y)
+as.integer(y)
+as.integer(y) / 365 # roughly 50 yrs
+```
+#Data Frames
+```{r}
+df <- data.frame(x = 1:2, y = 3:4)
+df
+typeof(df)
+class(df)
+```
+#List
+```{r}
+l <- list(
+  x = 1:4,
+  y = c("hi", "hello", "jello"),
+  z = c(TRUE, FALSE)
+)
+l
+```
+
+```{r}
+df
+```
+
+```{r}
+df %>%
+  pull(y)
+```
+
+# Working with Factors
+```{r}
+cat_lovers<- read.csv('https://raw.githubusercontent.com/ellaprotz/tidyverse/main/cat-lovers.csv')
+names(cat_lovers)
+glimpse(cat_lovers)
+```
+
+```{r}
+ggplot(cat_lovers, mapping = aes(x = handedness)) +
+  geom_bar()
+```
+
+```{r}
+#Use forcats to manipulate factors
+cat_lovers %>%
+  mutate(handedness = fct_infreq(handedness)) %>%
+  ggplot(mapping = aes(x = handedness)) +
+  geom_bar()
+```
+
+```{r}
+hotels <- read.csv('https://raw.githubusercontent.com/ellaprotz/tidyverse/main/hotels.csv')
+hotels
+```
+
+```{r}
+hotels %>%
+  select(starts_with("arrival_"))
+```
+
+```{r}
+#Step 1
+library(glue)
+hotels %>%
+  mutate(
+    arrival_date = glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}")
+    ) %>% 
+  relocate(arrival_date)
+```
+
+```{r}
+#Step 2
+hotels %>%
+  mutate(arrival_date = glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}")) %>%
+  count(arrival_date)
+```
+
+```{r}
+#Step 3
+hotels %>%
+  mutate(arrival_date = glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}")) %>%
+  count(arrival_date) %>%
+  ggplot(aes(x = arrival_date, y = n, group = 1)) +
+  geom_line()
+```
+
+```{r}
+#Step 1 Revised
+library(lubridate)
+hotels %>%
+  mutate(
+    arrival_date = (glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}"))
+    ) %>% 
+  relocate(arrival_date)
+```
+
+```{r}
+#Step 2 
+hotels %>%
+  mutate(arrival_date = (glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}"))) %>% 
+  count(arrival_date)
+```
+
+```{r}
+#Step 3 a
+hotels %>%
+  mutate(arrival_date = (glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}"))) %>% 
+  count(arrival_date) %>%
+  ggplot(aes(x = arrival_date, y = n, group = 1)) +
+  geom_line()
+```
+
+```{r}
+#Step 3 b
+hotels %>%
+  mutate(arrival_date = (glue("{arrival_date_year} {arrival_date_month} {arrival_date_day_of_month}"))) %>% 
+  count(arrival_date) %>%
+  ggplot(aes(x = arrival_date, y = n, group = 1)) +
+  geom_smooth()
+```
+
