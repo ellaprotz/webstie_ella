@@ -1,0 +1,116 @@
+---
+title: Data IO
+author: R package build
+date: '2022-02-23'
+slug: data-io
+categories: []
+tags: []
+---
+```{r}
+library(tidyverse)
+library(dplyr)
+```
+
+## Import from GitHub
+```{r}
+nobel <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/tidyverse/main/nobel.csv')
+nobel
+```
+
+Writing Data
+```{r}
+# Write a file
+df <- tribble(
+  ~x, ~y,
+  1,  "a",
+  2,  "b",
+  3,  "c"
+)
+write_csv(df, file = "nobel")
+#Read it back in to Inspect
+read_csv("nobel")
+```
+
+##Stem
+```{r}
+nobel_stem <- nobel %>%
+  filter(category %in% "Physics" | category %in% "Medicine" |category %in% "Chemistry" |category %in% "Economics")
+nobel_stem
+```
+##Non-STEM
+```{r}
+nobel_nonstem <- nobel %>%
+  filter(category %in% "Peace" | category %in% "Literature")
+nobel_nonstem
+```
+
+## Data with bad names
+```{r}
+edibnb_badnames <- read_csv('https://raw.githubusercontent.com/ellaprotz/tidyverse/main/edibnb-badnames.csv')
+names(edibnb_badnames)
+```
+#Option 1 - Define column names
+```{r}
+show_col_types = FALSE
+edibnb_col_names <- read_csv('https://raw.githubusercontent.com/ellaprotz/tidyverse/main/edibnb-badnames.csv',
+                             col_names = c("id", "price", 
+                                           "neighbourhood", "accommodates",
+                                           "bathroom", "bedroom", 
+                                           "bed", "review_scores_rating", 
+                                           "n_reviews", "url"))
+names(edibnb_col_names)
+```
+#Option 2 - Format text to snake_case
+```{r}
+edibnb_clean_names <- read_csv('https://raw.githubusercontent.com/ellaprotz/tidyverse/main/edibnb-badnames.csv') %>%
+  janitor::clean_names()
+names(edibnb_clean_names)
+```
+
+##Variable Types
+```{r}
+read_csv('https://raw.githubusercontent.com/ellaprotz/tidyverse/main/df-na.csv')
+```
+
+```{r}
+#Option 1
+read_csv("https://raw.githubusercontent.com/ellaprotz/tidyverse/main/df-na.csv", 
+         na = c("", "NA", ".", "9999", "Not applicable"))
+```
+```{r}
+#Option 2
+read_csv("https://raw.githubusercontent.com/ellaprotz/tidyverse/main/df-na.csv", col_types = list(col_double(), 
+                                            col_character(), 
+                                            col_character()))
+```
+
+## Favorite Foods
+```{r}
+fav_food <- read_csv("https://raw.githubusercontent.com/ellaprotz/tidyverse/main/favourite-food.csv")
+fav_food
+```
+
+```{r}
+fav_food <- read_csv("https://raw.githubusercontent.com/ellaprotz/tidyverse/main/df-na.csv",
+                       na = c("N/A", "99999")) %>%
+  janitor::clean_names()
+fav_food
+
+```
+
+```{r}
+fav_food <- read_csv("https://raw.githubusercontent.com/ellaprotz/tidyverse/main/favourite-food.csv", na = c("N/A", "99999")) %>%
+  janitor::clean_names() %>%
+  mutate(
+    age = if_else(age == "five", "5", age), 
+    age = as.numeric(age),
+    ses = fct_relevel(ses, "Low", "Middle", "High")
+  )
+fav_food
+```
+
+```{r}
+sales <- read_csv("https://raw.githubusercontent.com/ellaprotz/tidyverse/main/sales.csv")
+sales
+```
+
