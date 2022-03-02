@@ -1,0 +1,85 @@
+---
+title: prof evalulation
+author: R package build
+date: '2022-02-28'
+slug: regression
+categories: []
+tags: []
+---
+
+# Preliminaries
+## Importing libraires and data
+```{r}
+library(tidyverse)
+library(moderndive)
+library(skimr)
+library(gapminder)
+```
+
+## Exploratory data analysis
+```{r}
+evals_ch5 <- evals %>%
+  select(ID, score, bty_avg, age)
+```
+
+## Explore the Data
+```{r}
+glimpse(evals_ch5)
+```
+
+
+```{r}
+evals_ch5 %>%
+  sample_n(size = 5)
+```
+
+## Mean and Median of data
+```{r}
+evals_ch5 %>%
+  summarize(mean_bty_avg = mean(bty_avg), mean_score = mean(score),
+            median_bty_avg = median(bty_avg), median_score = median(score))
+```
+
+## Summary
+```{r}
+evals_ch5 %>% select(score, bty_avg) %>% skim()
+```
+
+```{r}
+evals_ch5 %>% 
+  get_correlation(formula = score ~ bty_avg)
+```
+
+## Scatterplot Avg
+```{r}
+plot(evals_ch5$score, evals_ch5$ty_avg)
+```
+
+
+## Scatterplot of relationship of teaching and beauty scores
+```{r}
+ggplot(evals_ch5, aes(x = bty_avg, y = score)) +
+  geom_point() +
+  labs(x = "Beauty Score", 
+       y = "Teaching Score",
+       title = "Scatterplot of relationship of teaching and beauty scores")
+```
+
+## Jittered Scatterplot of relationship of teaching and beauty scores
+```{r}
+ggplot(evals_ch5, aes(x = bty_avg, y = score)) +
+  geom_jitter() +
+  labs(x = "Beauty Score", y = "Teaching Score",
+       title = "Scatterplot of relationship of teaching and beauty scores")
+```
+
+## With regression line
+```{r}
+ggplot(evals_ch5, aes(x = bty_avg, y = score)) +
+  geom_point() +
+  labs(x = "Beauty Score", y = "Teaching Score",
+       title = "Relationship between teaching and beauty scores") +  
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+## Simple linear Regression

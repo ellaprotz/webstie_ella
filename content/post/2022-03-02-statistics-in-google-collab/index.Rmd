@@ -1,0 +1,11 @@
+---
+title: Statistics in Google Collab
+author: R package build
+date: '2022-03-02'
+slug: statistics-in-google-collab
+categories: []
+tags: []
+---
+
+## Using R in Google Collab for Statistics
+<script src="https://gist.github.com/ellaprotz/5e6e5d8640343c0680a248e4e9e0bed5.js"></script>
