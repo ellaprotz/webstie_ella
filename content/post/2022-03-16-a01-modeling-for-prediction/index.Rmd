@@ -1,0 +1,153 @@
+---
+title: 'A01: Modeling for Prediction'
+author: R package build
+date: '2022-03-16'
+slug: a01-modeling-for-prediction
+categories: []
+tags: []
+---
+## What are the advantages and disadvantages of k-fold cross validation relative to 
+
+### Single Split Validation set approach 
+An advantage is that it determines good parameters for the model, and can evaluate the performance of the model in a data set not present. A disadvantage is that the validation estimate of the test error can be highly variable. Also, there is only a subset of data used to fit in the model, its results are biased, making it hard to estimate the test error of the whole data set. 
+
+### LOOCV?
+An advantage of LOOCV is that it has less bias. Also, you can repeatedly run LOOCV and it will always have the same results. A disadvantage of LOOCV is that the data that is tested uses a single observation, and that can introduce variability. For example, if there is an outlier, then there is higher variability. 
+
+# Discuss Pros and cons of Bootstrapping 
+Pros: It is a straight forward way to gather estimates of standard error and confidence intervals. It does not need a lot of data. It can use a small data set. It also handles outliers well. 
+Cons: It takes a lot of computational time. There is also a decent margin or error. It can also fail when distributions are not finite.
+
+# Identify suitable predictor and predicted variables
+I used the the price of unit area to predict house age. I tried other predictors like latitude to predict distance to the nearest MRT station, but the curve was very broad, so I did not use that one. 
+
+## Import Data
+```{r}
+library(readxl)
+library(boot)
+df <- read_excel("~/Desktop/Real estate valuation data set.xlsx")
+df
+```
+
+## Cross Validation
+```{r}
+set.seed(1)
+head(df)
+dim(df)
+train <- sample(414, 207)
+head(train)
+```
+
+```{r}
+## Make the variables in Auto data set as locally accessible objects
+attach(df)
+lm.fit <- lm(`Y house price of unit area`~`X2 house age`, data = df, subset = train)
+lm.fit
+```
+
+```{r}
+mean((`Y house price of unit area` - predict(lm.fit,df))[-train]^2)
+```
+
+```{r}
+plot(`Y house price of unit area`~`X2 house age`)
+```
+```{r}
+## Fit a quadratic function
+lm.fit.poly <- lm(`Y house price of unit area`~ poly(`X2 house age`,2), data = df, subset = train)
+lm.fit.poly
+```
+```{r}
+## As we increase the degree of the polynomial to 2, the error decreases
+mean((`Y house price of unit area` - predict(lm.fit.poly,df))[-train]^2)
+```
+
+## LOOCV: Leave One Out and Cross Validation
+```{r}
+n = 2
+set.seed(n)
+train <- sample(414, 207)
+attach(df)
+lm.fit <- lm(`Y house price of unit area`~`X2 house age`, data = df, subset = train)
+lm.fit.poly <- lm(`Y house price of unit area`~ poly(`X2 house age`,2), data = df, subset = train)
+mean((`Y house price of unit area` - predict(lm.fit,df))[-train]^2)
+mean((`Y house price of unit area` - predict(lm.fit.poly,df))[-train]^2)
+```
+
+
+```{r}
+glm.fit <- glm(`Y house price of unit area`~`X2 house age`, data = df)
+coef(glm.fit)
+lm.fit <- lm(`Y house price of unit area`~`X2 house age`, data = df)
+coef(lm.fit)
+```
+```{r}
+cv.err <- cv.glm(df, glm.fit)
+cv.err$delta
+```
+```{r}
+cv.error <- rep(0,5)
+degree <- 1:5
+for (d in degree){
+  glm.fit <- glm(`Y house price of unit area`~poly(`X2 house age`,d), data = df)
+  cv.error[d] <- cv.glm(df, glm.fit)$delta[1]
+}
+cv.error
+```
+```{r}
+plot(degree, cv.error, type = "b")
+```
+
+## K For Cross Validation
+```{r}
+K = 10
+cv.error.10 <- rep(0,5)
+degree <- 1:5
+for (d in degree){
+  glm.fit <- glm(`Y house price of unit area`~poly(`X2 house age`,d), data = df)
+  cv.error.10[d] <- cv.glm(df, glm.fit, K = K)$delta[1]
+}
+cv.error.10
+```
+```{r}
+plot(degree, cv.error, type = "b")
+lines(degree, cv.error.10, type = "b", col = "red")
+```
+## Bootstrap Validation
+```{r}
+## Estimation of Accuracy of a Linear Model
+boot.fn <- function(data, index) {
+  return(coef(lm(`Y house price of unit area`~`X2 house age`, data = data, subset = index)))
+}
+```
+
+```{r}
+boot.fn(df, 1:414)
+```
+
+```{r}
+boot(df, boot.fn, 100)
+```
+```{r}
+boot(df, boot.fn, 1000)
+```
+
+```{r}
+boot.out <- boot(df, boot.fn, 100)
+plot(boot.out)
+```
+
+```{r}
+boot.out <- boot(df, boot.fn, 1000)
+plot(boot.out)
+```
+
+```{r}
+boot.out <- boot(df, boot.fn, 10000)
+plot(boot.out)
+```
+
+
+
+
+

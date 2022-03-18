@@ -60,7 +60,7 @@ mean((mpg - predict(lm.fit,Auto))[-train]^2)
 mean((mpg - predict(lm.fit.poly,Auto))[-train]^2)
 ```
 
-## LOO CV: Leave One Out and Cross Validation
+## LOOCV: Leave One Out and Cross Validation
 ```{r}
 ## GLM defaults to lm when passed without any arguments
 glm.fit <- glm(mpg~horsepower, data = Auto)

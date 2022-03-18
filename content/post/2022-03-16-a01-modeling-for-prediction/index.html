@@ -1,0 +1,202 @@
+---
+title: 'A01: Modeling for Prediction'
+author: R package build
+date: '2022-03-16'
+slug: a01-modeling-for-prediction
+categories: []
+tags: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="what-are-the-advantages-and-disadvantages-of-k-fold-cross-validation-relative-to" class="section level2">
+<h2>What are the advantages and disadvantages of k-fold cross validation relative to</h2>
+<div id="single-split-validation-set-approach" class="section level3">
+<h3>Single Split Validation set approach</h3>
+<p>An advantage is that it determines good parameters for the model, and can evaluate the performance of the model in a data set not present. A disadvantage is that the validation estimate of the test error can be highly variable. Also, there is only a subset of data used to fit in the model, its results are biased, making it hard to estimate the test error of the whole data set.</p>
+</div>
+<div id="loocv" class="section level3">
+<h3>LOOCV?</h3>
+<p>An advantage of LOOCV is that it has less bias. Also, you can repeatedly run LOOCV and it will always have the same results. A disadvantage of LOOCV is that the data that is tested uses a single observation, and that can introduce variability. For example, if there is an outlier, then there is higher variability.</p>
+</div>
+</div>
+<div id="discuss-pros-and-cons-of-bootstrapping" class="section level1">
+<h1>Discuss Pros and cons of Bootstrapping</h1>
+<p>Pros: It is a straight forward way to gather estimates of standard error and confidence intervals. It does not need a lot of data. It can use a small data set. It also handles outliers well.
+Cons: It takes a lot of computational time. There is also a decent margin or error. It can also fail when distributions are not finite.</p>
+</div>
+<div id="identify-suitable-predictor-and-predicted-variables" class="section level1">
+<h1>Identify suitable predictor and predicted variables</h1>
+<p>I used the the price of unit area to predict house age. I tried other predictors like latitude to predict distance to the nearest MRT station, but the curve was very broad, so I did not use that one.</p>
+<div id="import-data" class="section level2">
+<h2>Import Data</h2>
+<pre class="r"><code>library(readxl)
+library(boot)
+df &lt;- read_excel(&quot;~/Desktop/Real estate valuation data set.xlsx&quot;)
+df</code></pre>
+<pre><code>## # A tibble: 414 × 8
+##       No `X1 transaction date` `X2 house age` `X3 distance to…` `X4 number of …`
+##    &lt;dbl&gt;                 &lt;dbl&gt;          &lt;dbl&gt;             &lt;dbl&gt;            &lt;dbl&gt;
+##  1     1                 2013.           32                84.9               10
+##  2     2                 2013.           19.5             307.                 9
+##  3     3                 2014.           13.3             562.                 5
+##  4     4                 2014.           13.3             562.                 5
+##  5     5                 2013.            5               391.                 5
+##  6     6                 2013.            7.1            2175.                 3
+##  7     7                 2013.           34.5             623.                 7
+##  8     8                 2013.           20.3             288.                 6
+##  9     9                 2014.           31.7            5512.                 1
+## 10    10                 2013.           17.9            1783.                 3
+## # … with 404 more rows, and 3 more variables: `X5 latitude` &lt;dbl&gt;,
+## #   `X6 longitude` &lt;dbl&gt;, `Y house price of unit area` &lt;dbl&gt;</code></pre>
+</div>
+<div id="cross-validation" class="section level2">
+<h2>Cross Validation</h2>
+<pre class="r"><code>set.seed(1)
+head(df)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##      No `X1 transaction date` `X2 house age` `X3 distance to …` `X4 number of …`
+##   &lt;dbl&gt;                 &lt;dbl&gt;          &lt;dbl&gt;              &lt;dbl&gt;            &lt;dbl&gt;
+## 1     1                 2013.           32                 84.9               10
+## 2     2                 2013.           19.5              307.                 9
+## 3     3                 2014.           13.3              562.                 5
+## 4     4                 2014.           13.3              562.                 5
+## 5     5                 2013.            5                391.                 5
+## 6     6                 2013.            7.1             2175.                 3
+## # … with 3 more variables: `X5 latitude` &lt;dbl&gt;, `X6 longitude` &lt;dbl&gt;,
+## #   `Y house price of unit area` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>dim(df)</code></pre>
+<pre><code>## [1] 414   8</code></pre>
+<pre class="r"><code>train &lt;- sample(414, 207)
+head(train)</code></pre>
+<pre><code>## [1] 324 167 129 299 270 187</code></pre>
+<pre class="r"><code>## Make the variables in Auto data set as locally accessible objects
+attach(df)
+lm.fit &lt;- lm(`Y house price of unit area`~`X2 house age`, data = df, subset = train)
+lm.fit</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = `Y house price of unit area` ~ `X2 house age`, data = df, 
+##     subset = train)
+## 
+## Coefficients:
+##    (Intercept)  `X2 house age`  
+##        43.7765         -0.3043</code></pre>
+<pre class="r"><code>mean((`Y house price of unit area` - predict(lm.fit,df))[-train]^2)</code></pre>
+<pre><code>## [1] 152.4567</code></pre>
+<pre class="r"><code>plot(`Y house price of unit area`~`X2 house age`)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>## Fit a quadratic function
+lm.fit.poly &lt;- lm(`Y house price of unit area`~ poly(`X2 house age`,2), data = df, subset = train)
+lm.fit.poly</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = `Y house price of unit area` ~ poly(`X2 house age`, 
+##     2), data = df, subset = train)
+## 
+## Coefficients:
+##              (Intercept)  poly(`X2 house age`, 2)1  poly(`X2 house age`, 2)2  
+##                    38.23                    -68.43                    126.30</code></pre>
+<pre class="r"><code>## As we increase the degree of the polynomial to 2, the error decreases
+mean((`Y house price of unit area` - predict(lm.fit.poly,df))[-train]^2)</code></pre>
+<pre><code>## [1] 138.6956</code></pre>
+</div>
+<div id="loocv-leave-one-out-and-cross-validation" class="section level2">
+<h2>LOOCV: Leave One Out and Cross Validation</h2>
+<pre class="r"><code>n = 2
+set.seed(n)
+train &lt;- sample(414, 207)
+attach(df)</code></pre>
+<pre><code>## The following objects are masked from df (pos = 3):
+## 
+##     No, X1 transaction date, X2 house age, X3 distance to the nearest
+##     MRT station, X4 number of convenience stores, X5 latitude, X6
+##     longitude, Y house price of unit area</code></pre>
+<pre class="r"><code>lm.fit &lt;- lm(`Y house price of unit area`~`X2 house age`, data = df, subset = train)
+lm.fit.poly &lt;- lm(`Y house price of unit area`~ poly(`X2 house age`,2), data = df, subset = train)
+mean((`Y house price of unit area` - predict(lm.fit,df))[-train]^2)</code></pre>
+<pre><code>## [1] 169.1608</code></pre>
+<pre class="r"><code>mean((`Y house price of unit area` - predict(lm.fit.poly,df))[-train]^2)</code></pre>
+<pre><code>## [1] 135.7631</code></pre>
+<pre class="r"><code>glm.fit &lt;- glm(`Y house price of unit area`~`X2 house age`, data = df)
+coef(glm.fit)</code></pre>
+<pre><code>##    (Intercept) `X2 house age` 
+##     42.4346970     -0.2514884</code></pre>
+<pre class="r"><code>lm.fit &lt;- lm(`Y house price of unit area`~`X2 house age`, data = df)
+coef(lm.fit)</code></pre>
+<pre><code>##    (Intercept) `X2 house age` 
+##     42.4346970     -0.2514884</code></pre>
+<pre class="r"><code>cv.err &lt;- cv.glm(df, glm.fit)
+cv.err$delta</code></pre>
+<pre><code>## [1] 178.2977 178.2955</code></pre>
+<pre class="r"><code>cv.error &lt;- rep(0,5)
+degree &lt;- 1:5
+for (d in degree){
+  glm.fit &lt;- glm(`Y house price of unit area`~poly(`X2 house age`,d), data = df)
+  cv.error[d] &lt;- cv.glm(df, glm.fit)$delta[1]
+}
+cv.error</code></pre>
+<pre><code>## [1] 178.2977 149.5344 149.7947 149.7369 149.6993</code></pre>
+<pre class="r"><code>plot(degree, cv.error, type = &quot;b&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="k-for-cross-validation" class="section level2">
+<h2>K For Cross Validation</h2>
+<pre class="r"><code>K = 10
+cv.error.10 &lt;- rep(0,5)
+degree &lt;- 1:5
+for (d in degree){
+  glm.fit &lt;- glm(`Y house price of unit area`~poly(`X2 house age`,d), data = df)
+  cv.error.10[d] &lt;- cv.glm(df, glm.fit, K = K)$delta[1]
+}
+cv.error.10</code></pre>
+<pre><code>## [1] 178.9132 149.8969 151.1610 149.8846 148.9404</code></pre>
+<pre class="r"><code>plot(degree, cv.error, type = &quot;b&quot;)
+lines(degree, cv.error.10, type = &quot;b&quot;, col = &quot;red&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+## Bootstrap Validation</p>
+<pre class="r"><code>## Estimation of Accuracy of a Linear Model
+boot.fn &lt;- function(data, index) {
+  return(coef(lm(`Y house price of unit area`~`X2 house age`, data = data, subset = index)))
+}</code></pre>
+<pre class="r"><code>boot.fn(df, 1:414)</code></pre>
+<pre><code>##    (Intercept) `X2 house age` 
+##     42.4346970     -0.2514884</code></pre>
+<pre class="r"><code>boot(df, boot.fn, 100)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df, statistic = boot.fn, R = 100)
+## 
+## 
+## Bootstrap Statistics :
+##       original       bias    std. error
+## t1* 42.4346970  0.127660432  1.24639277
+## t2* -0.2514884 -0.006567251  0.06057926</code></pre>
+<pre class="r"><code>boot(df, boot.fn, 1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df, statistic = boot.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##       original        bias    std. error
+## t1* 42.4346970 -0.0238497238  1.29659662
+## t2* -0.2514884  0.0003772513  0.06264515</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 100)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 1000)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 10000)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+</div>
+</div>
