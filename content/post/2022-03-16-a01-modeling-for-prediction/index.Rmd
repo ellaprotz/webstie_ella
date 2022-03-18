@@ -128,18 +128,23 @@ boot.fn(df, 1:414)
 ```{r}
 boot(df, boot.fn, 100)
 ```
-```{r}
-boot(df, boot.fn, 1000)
-```
+
 
 ```{r}
 boot.out <- boot(df, boot.fn, 100)
 plot(boot.out)
 ```
+```{r}
+boot(df, boot.fn, 1000)
+```
 
 ```{r}
 boot.out <- boot(df, boot.fn, 1000)
 plot(boot.out)
+```
+
+```{r}
+boot(df, boot.fn, 10000)
 ```
 
 ```{r}

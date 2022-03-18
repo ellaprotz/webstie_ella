@@ -176,6 +176,9 @@ boot.fn &lt;- function(data, index) {
 ##       original       bias    std. error
 ## t1* 42.4346970  0.127660432  1.24639277
 ## t2* -0.2514884 -0.006567251  0.06057926</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 100)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
 <pre class="r"><code>boot(df, boot.fn, 1000)</code></pre>
 <pre><code>## 
 ## ORDINARY NONPARAMETRIC BOOTSTRAP
@@ -187,16 +190,26 @@ boot.fn &lt;- function(data, index) {
 ## 
 ## Bootstrap Statistics :
 ##       original        bias    std. error
-## t1* 42.4346970 -0.0238497238  1.29659662
-## t2* -0.2514884  0.0003772513  0.06264515</code></pre>
-<pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 100)
-plot(boot.out)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+## t1* 42.4346970 -0.0163292423  1.27613898
+## t2* -0.2514884  0.0002511322  0.06131817</code></pre>
 <pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 1000)
 plot(boot.out)</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<pre class="r"><code>boot(df, boot.fn, 10000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df, statistic = boot.fn, R = 10000)
+## 
+## 
+## Bootstrap Statistics :
+##       original        bias    std. error
+## t1* 42.4346970 -0.0086236562  1.24877031
+## t2* -0.2514884 -0.0002700459  0.06024529</code></pre>
 <pre class="r"><code>boot.out &lt;- boot(df, boot.fn, 10000)
 plot(boot.out)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
 </div>
 </div>
