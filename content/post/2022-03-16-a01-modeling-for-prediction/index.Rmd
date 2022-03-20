@@ -25,7 +25,7 @@ I used the the price of unit area to predict house age. I tried other predictors
 ```{r}
 library(readxl)
 library(boot)
-df <- read_excel("~/Desktop/Real estate valuation data set.xlsx")
+df <- read_excel("data/Real estate valuation data set.xlsx")
 df
 ```
 
