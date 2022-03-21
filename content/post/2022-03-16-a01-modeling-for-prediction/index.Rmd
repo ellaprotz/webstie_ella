@@ -23,9 +23,9 @@ I used the the price of unit area to predict house age. I tried other predictors
 
 ## Import Data
 ```{r}
-library(readxl)
 library(boot)
-df <- read_excel("data/Real estate valuation data set.xlsx")
+row.names=F
+df <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Real%20estate%20valuation%20data%20set.csv')
 df
 ```
 
@@ -41,25 +41,25 @@ head(train)
 ```{r}
 ## Make the variables in Auto data set as locally accessible objects
 attach(df)
-lm.fit <- lm(`Y house price of unit area`~`X2 house age`, data = df, subset = train)
+lm.fit <- lm(Y.house.price.of.unit.area~X2.house.age, data = df, subset = train)
 lm.fit
 ```
 
 ```{r}
-mean((`Y house price of unit area` - predict(lm.fit,df))[-train]^2)
+mean((Y.house.price.of.unit.area - predict(lm.fit,df))[-train]^2)
 ```
 
 ```{r}
-plot(`Y house price of unit area`~`X2 house age`)
+plot(Y.house.price.of.unit.area~X2.house.age)
 ```
 ```{r}
 ## Fit a quadratic function
-lm.fit.poly <- lm(`Y house price of unit area`~ poly(`X2 house age`,2), data = df, subset = train)
+lm.fit.poly <- lm(Y.house.price.of.unit.area~ poly(X2.house.age,2), data = df, subset = train)
 lm.fit.poly
 ```
 ```{r}
 ## As we increase the degree of the polynomial to 2, the error decreases
-mean((`Y house price of unit area` - predict(lm.fit.poly,df))[-train]^2)
+mean((Y.house.price.of.unit.area - predict(lm.fit.poly,df))[-train]^2)
 ```
 
 ## LOOCV: Leave One Out and Cross Validation
@@ -68,17 +68,17 @@ n = 2
 set.seed(n)
 train <- sample(414, 207)
 attach(df)
-lm.fit <- lm(`Y house price of unit area`~`X2 house age`, data = df, subset = train)
-lm.fit.poly <- lm(`Y house price of unit area`~ poly(`X2 house age`,2), data = df, subset = train)
-mean((`Y house price of unit area` - predict(lm.fit,df))[-train]^2)
-mean((`Y house price of unit area` - predict(lm.fit.poly,df))[-train]^2)
+lm.fit <- lm(Y.house.price.of.unit.area~X2.house.age, data = df, subset = train)
+lm.fit.poly <- lm(Y.house.price.of.unit.area~ poly(X2.house.age,2), data = df, subset = train)
+mean((Y.house.price.of.unit.area - predict(lm.fit,df))[-train]^2)
+mean((Y.house.price.of.unit.area - predict(lm.fit.poly,df))[-train]^2)
 ```
 
 
 ```{r}
-glm.fit <- glm(`Y house price of unit area`~`X2 house age`, data = df)
+glm.fit <- glm(Y.house.price.of.unit.area~X2.house.age, data = df)
 coef(glm.fit)
-lm.fit <- lm(`Y house price of unit area`~`X2 house age`, data = df)
+lm.fit <- lm(Y.house.price.of.unit.area~X2.house.age, data = df)
 coef(lm.fit)
 ```
 ```{r}
@@ -89,7 +89,7 @@ cv.err$delta
 cv.error <- rep(0,5)
 degree <- 1:5
 for (d in degree){
-  glm.fit <- glm(`Y house price of unit area`~poly(`X2 house age`,d), data = df)
+  glm.fit <- glm(Y.house.price.of.unit.area~poly(X2.house.age,d), data = df)
   cv.error[d] <- cv.glm(df, glm.fit)$delta[1]
 }
 cv.error
@@ -104,7 +104,7 @@ K = 10
 cv.error.10 <- rep(0,5)
 degree <- 1:5
 for (d in degree){
-  glm.fit <- glm(`Y house price of unit area`~poly(`X2 house age`,d), data = df)
+  glm.fit <- glm(Y.house.price.of.unit.area~poly(X2.house.age,d), data = df)
   cv.error.10[d] <- cv.glm(df, glm.fit, K = K)$delta[1]
 }
 cv.error.10
@@ -117,7 +117,7 @@ lines(degree, cv.error.10, type = "b", col = "red")
 ```{r}
 ## Estimation of Accuracy of a Linear Model
 boot.fn <- function(data, index) {
-  return(coef(lm(`Y house price of unit area`~`X2 house age`, data = data, subset = index)))
+  return(coef(lm(Y.house.price.of.unit.area~X2.house.age, data = data, subset = index)))
 }
 ```
 
