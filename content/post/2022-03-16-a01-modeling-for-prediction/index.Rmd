@@ -24,7 +24,6 @@ I used the the price of unit area to predict house age. I tried other predictors
 ## Import Data
 ```{r}
 library(boot)
-row.names=F
 df <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Real%20estate%20valuation%20data%20set.csv')
 df
 ```
