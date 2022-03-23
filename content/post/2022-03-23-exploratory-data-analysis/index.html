@@ -1,0 +1,90 @@
+---
+title: 'Exploratory Data Analysis '
+author: R package build
+date: '2022-03-23'
+slug: exploratory-data-analysis
+categories: []
+tags: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="loading-and-preparing-the-data" class="section level2">
+<h2>Loading and Preparing the data</h2>
+<pre class="r"><code>if(!require(&quot;pacman&quot;)) install.packages(&quot;pacman&quot;)</code></pre>
+<pre><code>## Loading required package: pacman</code></pre>
+<pre class="r"><code>pacman::p_load(pacman, magrittr, productplots, psych, RColorBrewer, tidyverse)</code></pre>
+<pre class="r"><code>names(happy)</code></pre>
+<pre><code>##  [1] &quot;id&quot;      &quot;happy&quot;   &quot;year&quot;    &quot;age&quot;     &quot;sex&quot;     &quot;marital&quot; &quot;degree&quot; 
+##  [8] &quot;finrela&quot; &quot;health&quot;  &quot;wtssall&quot;</code></pre>
+<pre class="r"><code>df &lt;- happy %&gt;%
+  as_tibble() %&gt;%
+  print()</code></pre>
+<pre><code>## # A tibble: 51,020 × 10
+##       id happy          year   age sex    marital  degree finrela health wtssall
+##    &lt;dbl&gt; &lt;fct&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;    &lt;fct&gt;  &lt;fct&gt;   &lt;fct&gt;    &lt;dbl&gt;
+##  1     1 not too happy  1972    23 female never m… bache… average good     0.445
+##  2     2 not too happy  1972    70 male   married  lt hi… above … fair     0.889
+##  3     3 pretty happy   1972    48 female married  high … average excel…   0.889
+##  4     4 not too happy  1972    27 female married  bache… average good     0.889
+##  5     5 pretty happy   1972    61 female married  high … above … good     0.889
+##  6     6 pretty happy   1972    26 male   never m… high … above … good     0.445
+##  7     7 not too happy  1972    28 male   divorced high … above … excel…   0.445
+##  8     8 not too happy  1972    27 male   never m… bache… average good     0.445
+##  9     9 pretty happy   1972    21 female never m… high … average excel…   0.445
+## 10    10 pretty happy   1972    30 female married  high … below … fair     0.889
+## # … with 51,010 more rows</code></pre>
+<pre class="r"><code>df %&lt;&gt;%
+  select(happy:health) %&gt;%
+  print()</code></pre>
+<pre><code>## # A tibble: 51,020 × 8
+##    happy          year   age sex    marital       degree         finrela  health
+##    &lt;fct&gt;         &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;         &lt;fct&gt;          &lt;fct&gt;    &lt;fct&gt; 
+##  1 not too happy  1972    23 female never married bachelor       average  good  
+##  2 not too happy  1972    70 male   married       lt high school above a… fair  
+##  3 pretty happy   1972    48 female married       high school    average  excel…
+##  4 not too happy  1972    27 female married       bachelor       average  good  
+##  5 pretty happy   1972    61 female married       high school    above a… good  
+##  6 pretty happy   1972    26 male   never married high school    above a… good  
+##  7 not too happy  1972    28 male   divorced      high school    above a… excel…
+##  8 not too happy  1972    27 male   never married bachelor       average  good  
+##  9 pretty happy   1972    21 female never married high school    average  excel…
+## 10 pretty happy   1972    30 female married       high school    below a… fair  
+## # … with 51,010 more rows</code></pre>
+<pre class="r"><code>levels(df$happy)</code></pre>
+<pre><code>## [1] &quot;not too happy&quot; &quot;pretty happy&quot;  &quot;very happy&quot;</code></pre>
+<pre class="r"><code>df %&lt;&gt;%
+  mutate(happy = fct_rev(happy))
+levels(df$happy)</code></pre>
+<pre><code>## [1] &quot;very happy&quot;    &quot;pretty happy&quot;  &quot;not too happy&quot;</code></pre>
+<pre class="r"><code># Bar chart of happy
+df %&gt;%
+  ggplot() +
+  geom_bar(aes(happy, fill = happy)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code># Frequencies of happy 
+df %&gt;% count(happy)</code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   happy             n
+##   &lt;fct&gt;         &lt;int&gt;
+## 1 very happy    14800
+## 2 pretty happy  25874
+## 3 not too happy  5629
+## 4 &lt;NA&gt;           4717</code></pre>
+<pre class="r"><code>df %&lt;&gt;% 
+  filter(!is.na(happy))
+
+df %&gt;%
+  ggplot() +
+  geom_bar(aes(happy, fill = happy)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
