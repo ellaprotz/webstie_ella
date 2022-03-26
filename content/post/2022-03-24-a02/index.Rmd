@@ -1,0 +1,73 @@
+---
+title: A02
+author: R package build
+date: '2022-03-24'
+slug: a02
+categories: []
+tags: []
+---
+
+```{r}
+library(tidyverse)
+library(boot)
+df <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Professor_Proposes_Data.csv')
+df
+```
+```{r}
+Error = TRUE
+set.seed(1)
+head(df)
+dim(df)
+train <- sample(440, 220)
+head(train)
+```
+```{r}
+attach(df)
+lm_fit <- lm(Price~Carat+Colour+Clarity+Cut+Certification+Polish data = df, subset = )
+lm_fit
+```
+
+
+
+```{r}
+df %<>%
+  select(Carat, Price) %>%
+  print()
+```
+```{r}
+
+summary(lm_fit)
+predicted_df <- data.frame(Carat = predict(lm_fit, df), Price=df$Price)
+ggplot(data = df, aes(x = Carat, y = Price)) + 
+  geom_point(color='blue') +
+  geom_line(color='red',data = predicted_df, aes(x=Carat, y=Price))
+```
+
+
+
+```{r}
+df %<>%
+  filter(Carat == '0.9') %>%
+  print()
+```
+
+```{r}
+df %>%
+  ggplot() +
+  geom_point(aes(Carat, Price))
+```
+
+```{r}
+boot.fn <- function(data, index) {
+  return(coef(lm(Carat~Price, data = data, subset = index)))
+}
+boot.fn(df, 1:440)
+```
+
+```{r}
+boot.fn(df, 1:440)
+boot(df, boot.fn, 100)
+boot.out <- boot(df, boot.fn, 100)
+plot(boot.out)
+```
+
