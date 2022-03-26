@@ -175,7 +175,7 @@ plot(boot.out)
 
 
 ## The final price we can predict the diamond to be based on will be:
-1. Just Carots is 2377.78
-2. Everything : 2,364.46
+1. Equation 1: $2,377.78
+2. Equation 2: $2,364.46
 
 Based on the two numbers, it will fall under the Professors budget and that the factors like color, clarity, cut etc do not have much impact on the pricing of the diamond. 
