@@ -1,0 +1,130 @@
+---
+title: A03
+author: R package build
+date: '2022-04-01'
+slug: a03
+categories: []
+tags: []
+---
+```{r}
+library(tidyverse)
+library(caret)
+train_data <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/train.csv')
+gender_data <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/gender_submission.csv')
+test_data <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/test.csv')
+```
+
+## NA in DF
+```{r}
+train_data[train_data==""] <- NA
+```
+
+```{r}
+sapply(train_data, function(x) sum(is.na(x)))
+```
+## Note: There are a lot of missing ages and cabins, so will not use those factors in the regression model
+
+```{r}
+sapply(train_data, function (x) length(unique(x)))
+```
+
+# Ratios
+```{r}
+overall_survival_rate = sum(train_data$Survived == 1)/length(train_data$Survived)
+cat("Fraction of People who survived =", format(overall_survival_rate)) 
+```
+```{r}
+female_survival_rate = sum((train_data$Survived ==1) & (train_data$Sex == "female"))/sum(train_data$Sex == "female")
+cat("Fraction of Females who survived =", format(female_survival_rate))
+```
+```{r}
+male_survival_rate = sum((train_data$Survived ==1) & (train_data$Sex == "male"))/sum(train_data$Sex == "male")
+cat("Fraction of Males who survived =", format(male_survival_rate))
+```
+```{r}
+class1_survival_rate = sum((train_data$Survived ==1) & (train_data$Pclass == 1))/sum(train_data$Pclass == 1)
+cat("Fraction of First class who survived =", format(class1_survival_rate))
+```
+```{r}
+class2_survival_rate = sum((train_data$Survived ==1) & (train_data$Pclass == 2))/sum(train_data$Pclass == 2)
+cat("Fraction of Second Class who survived =", format(class2_survival_rate))
+```
+```{r}
+class3_survival_rate = sum((train_data$Survived ==1) & (train_data$Pclass == 3))/sum(train_data$Pclass == 3)
+cat("Fraction of Third Class who survived =", format(class3_survival_rate))
+```
+
+```{r}
+data.T <- na.omit(subset(train_data, select=c(2,3,5)))
+table(data.T)
+prop.table(table(train_data$Survived))
+prop.table(table(train_data$Sex))
+prop.table(table(train_data$Pclass))
+```
+
+```{r}
+train_df <- subset(train_data, select = c(2,3,5,6,7,8,10,12))
+```
+```{r}
+library(dummies)
+data.indicator = subset(train_df, select=c(1:7))
+data.indicator$Sex = dummy(train_df$Sex)
+cor(data.indicator)
+```
+## Analysis: Looks like there is a correlation between passenger class and Fare (higher class would mean higher fare), so therefor only need one of the two variables during the regression. Seems to have a somewhat strong correlation between if you had sibblings, and if it was a family trip (0.41483770). Not many things that would affect the correlation matrix. 
+
+```{r}
+is.factor(train_df$Sex)
+contrasts(factor(train_df$Sex))
+```
+```{r}
+levels(factor(train_df$Embarked))
+contrasts(factor(train_df$Embarked))
+```
+
+```{r}
+model <- glm(Survived~. , family=binomial (link ='logit'), data=train_df)
+summary(model)
+```
+# Analysis - As the class goes down, the chance of survival goes down by 1.199251 and going from male to female, chances of survval goes down by 2.638476, which are both significant. For age, goign down in age doesn't go down that much, if you go by one, it becomes significant when a passenger is signifigantly older. The more sibblings there are, the chances of survival decreases by 0.363208. What is not significant is Parch, Fare, EmbarkedQ and EmbarkedS.
+
+```{r}
+anova(model, test="Chisq")
+```
+
+# Revised Data
+```{r}
+train_df2 <- na.omit(subset(train_df, select=c(1,2,3,4,5)))
+model <-glm(Survived ~. , family=binomial(link='logit'), data = train_df2)
+summary(model)
+confint(model)
+```
+```{r}
+plot(model)
+```
+
+## The probability that we predicted taht the survivial rate is above 50%, and they actually survived, and probability that the passenger survived is below 50%, and they actually did not survive. 
+```{r}
+y = train_df2$Survived - trunc(2*model$fitted)
+hits = sum(y==0)
+hitratio <- hits/length(y)
+hitratio
+```
+
+```{r}
+exp(coef(model))
+```
+# Analysis - The odds of survival going down in class, is about 4 times worse. The odds of survival going from male to female is about 15 times worse, etc. 
+
+```{r}
+exp(cbind(OddsRatio = coef(model), confint(model)))
+```
+
+
+
+
+
+
+
+
+

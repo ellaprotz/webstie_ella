@@ -1,0 +1,47 @@
+---
+title: 'Logistic Regressions '
+author: R package build
+date: '2022-03-28'
+slug: logistic-regressions
+categories: []
+tags: []
+---
+```{r}
+library(tidyverse)
+library(ggridges)
+library(openintro)
+library(FIT)
+set.seed(1234)
+glimpse(email)
+```
+
+```{r}
+email %>% 
+  group_by(spam) %>%
+  summarise(mean_num_char = mean(num_char))
+```
+```{r}
+email %>%
+  ggplot(aes(mean_num_char, spam)) +
+  geom_density_ridges()
+```
+```{r}
+email%>%
+  ggplot(aes(x = re_subj, fill = spam)) +
+  geom_bar(position = "fill") +
+  labs(
+    x = 'Whether "re:", etc. was in the email subject',
+    fill = "Spam",
+    y =  'NULL',
+    title = 'Spam vs "re." in subject'
+  ) +
+  scale_fill_manual(values = c("#DEB4A0", "#CA235F"))
+```
+
+```{r}
+spam_fit <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(spam ~ num_char, data = email, family = "binomial")
+tidy(spam_fit)
+```
+

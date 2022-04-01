@@ -1,0 +1,73 @@
+---
+title: A03
+author: R package build
+date: '2022-03-30'
+slug: a03
+categories: []
+tags: []
+---
+
+```{r}
+library(tidyverse)
+library(Amelia)
+train_data <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/train.csv')
+gender_data <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/gender_submission.csv')
+test_data <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/test.csv')
+train_data
+test_data
+```
+# Where 0 = Did not survive and 1 = Survived
+
+```{r}
+female_data <-train_data %>%
+  select(Sex, Survived) %>%
+  filter(Sex == 'female')
+female_data
+```
+```{r}
+proportions <- sum(female_data$Survived)/length(female_data$Survived)
+female_rate <- proportions*100
+print(female_rate)
+```
+
+```{r}
+male_data <-train_data %>%
+  select(Sex, Survived) %>%
+  filter(Sex == 'male')
+```
+
+```{r}
+proportions <- sum(male_data$Survived)/length(male_data$Survived)
+male_rate <- proportions*100
+print(male_rate)
+
+```
+
+```{r}
+sapply(train_data, function(x) sum(is.na(x)))
+sapply(train_data, function(x) length(unique(x)))
+missmap(train_data, main = "Missing values vs observed")
+```
+
+
+```{r}
+model <- lm(Survived ~ Embarked+Fare+Parch+SibSp+Sex+Pclass, data=train_data)
+summary(model)
+```
+
+```{r}
+confint(model)
+```
+```{r}
+exp(coef(model))
+```
+
+```{r}
+exp(cbind(OR = coef(model), confint(model)))
+```
+
+```{r}
+
+```
+
+

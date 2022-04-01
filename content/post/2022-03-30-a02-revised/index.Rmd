@@ -1,0 +1,133 @@
+---
+title: A02 Revised
+author: R package build
+date: '2022-03-30'
+slug: a02-revised
+categories: []
+tags: []
+---
+
+```{r}
+library(tidyverse)
+library(boot)
+library(patchwork)
+df <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Professor_Proposes_Data_Final.csv')
+```
+
+## Exploratory Data Analysis
+```{r}
+df %>% count(Cut)
+cut <- df %>%
+  ggplot() +
+  geom_bar(aes(Cut, fill = Cut)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none"
+  )
+
+df %>% count(Clarity)
+clarity <- df %>%
+  ggplot() +
+  geom_bar(aes(Clarity, fill = Clarity)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none"
+  )
+
+df %>% count(Certification)
+certification <- df %>%
+  ggplot() +
+  geom_bar(aes(Certification, fill = Certification)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none"
+  )
+
+df %>% count(Polish)
+polish <- df %>%
+  ggplot() +
+  geom_bar(aes(Polish, fill = Polish)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none"
+  )
+
+df %>% count(Symmetry)
+symmetry <- df %>%
+  ggplot() +
+  geom_bar(aes(Symmetry, fill = Symmetry)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none"
+  )
+cut + clarity + certification + polish + symmetry
+```
+
+```{r}
+carat <- ggplot(data = df, 
+       mapping = aes(x = Carat, y = Price,
+                     colour = Wholesaler)) +
+  geom_point() 
+color <- ggplot (df, aes(x = Colour, y = Price)) +
+  geom_boxplot()
+cut <- ggplot (df, aes(x = Cut, y = Price)) +
+  geom_boxplot()
+clarity <- ggplot (df, aes(x = Clarity, y = Price)) +
+  geom_boxplot()
+certification <- ggplot (df, aes(x = Certification, y = Price)) +
+  geom_boxplot()
+polish <- ggplot (df, aes(x = Polish, y = Price)) +
+  geom_boxplot()
+symmetry <- ggplot (df, aes(x = Symmetry, y = Price)) +
+  geom_boxplot()
+ carat + cut + color + clarity + certification + polish + symmetry 
+```
+### Bases on the graphs, it shows that the Carat and color has the most impact on price. As Carat increases, the price increases. It also shows that for colors J, K, L all have a higher price, which falls within the Faint yellow and light yellow. D has the highest price which is completely colorless and G which is Near colorless also has very high price. By looking at the chart, and those two factors, the diamond will come out to be around $2500, by just looking. The other boxplots have variation in them, showing that there isn't much correlation between them and price. For example, despite the polish going from Fair to Excelet, the price does not increase as the Polish quality increases, so therefor it shows that that variable does not have much impact on the price. On average, based on all of the factors that go into pricing, we can estimate the price will fall under $3000, so it is under the Professors price. 
+
+```{r}
+summary(df)
+```
+
+
+## Linear Regression Model
+```{r}
+model <- lm(Price~Carat, data = df)
+summary(model)
+```
+## Therefore the equation of Price based on  just Carats is y = -200.48 + 2864.73x. This model shows that carat has about 86% impact on the overall price alone. 
+
+```{r}
+model <- lm(Price~Cut, data = df)
+summary(model)
+```
+## Equation for Very Good cut is y = 2,455.2-1277.1
+
+```{r}
+model <- lm(Price~Colour, data = df)
+summary(model)
+```
+
+```{r}
+model <- lm(Price~Clarity, data = df)
+summary(model)
+```
+
+```{r}
+model <- lm(Price~Certification, data = df)
+summary(model)
+```
+
+```{r}
+model <- lm(Price~Polish, data = df)
+summary(model)
+```
+
+```{r}
+model <- lm(Price~Symmetry, data = df)
+summary(model)
+```
+
+
+
+
+

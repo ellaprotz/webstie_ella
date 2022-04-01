@@ -1,0 +1,313 @@
+---
+title: A03
+author: R package build
+date: '2022-04-01'
+slug: a03
+categories: []
+tags: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+## ✓ tibble  3.1.6     ✓ dplyr   1.0.8
+## ✓ tidyr   1.2.0     ✓ stringr 1.4.0
+## ✓ readr   2.1.2     ✓ forcats 0.5.1</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre><code>## 
+## Attaching package: &#39;caret&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     lift</code></pre>
+<pre class="r"><code>train_data &lt;- read.csv(file = &#39;https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/train.csv&#39;)
+gender_data &lt;- read.csv(file = &#39;https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/gender_submission.csv&#39;)
+test_data &lt;- read.csv(file = &#39;https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/test.csv&#39;)</code></pre>
+<div id="na-in-df" class="section level2">
+<h2>NA in DF</h2>
+<pre class="r"><code>train_data[train_data==&quot;&quot;] &lt;- NA</code></pre>
+<pre class="r"><code>sapply(train_data, function(x) sum(is.na(x)))</code></pre>
+<pre><code>## PassengerId    Survived      Pclass        Name         Sex         Age 
+##           0           0           0           0           0         177 
+##       SibSp       Parch      Ticket        Fare       Cabin    Embarked 
+##           0           0           0           0         687           2</code></pre>
+</div>
+<div id="note-there-are-a-lot-of-missing-ages-and-cabins-so-will-not-use-those-factors-in-the-regression-model" class="section level2">
+<h2>Note: There are a lot of missing ages and cabins, so will not use those factors in the regression model</h2>
+<pre class="r"><code>sapply(train_data, function (x) length(unique(x)))</code></pre>
+<pre><code>## PassengerId    Survived      Pclass        Name         Sex         Age 
+##         891           2           3         891           2          89 
+##       SibSp       Parch      Ticket        Fare       Cabin    Embarked 
+##           7           7         681         248         148           4</code></pre>
+</div>
+<div id="ratios" class="section level1">
+<h1>Ratios</h1>
+<pre class="r"><code>overall_survival_rate = sum(train_data$Survived == 1)/length(train_data$Survived)
+cat(&quot;Fraction of People who survived =&quot;, format(overall_survival_rate)) </code></pre>
+<pre><code>## Fraction of People who survived = 0.3838384</code></pre>
+<pre class="r"><code>female_survival_rate = sum((train_data$Survived ==1) &amp; (train_data$Sex == &quot;female&quot;))/sum(train_data$Sex == &quot;female&quot;)
+cat(&quot;Fraction of Females who survived =&quot;, format(female_survival_rate))</code></pre>
+<pre><code>## Fraction of Females who survived = 0.7420382</code></pre>
+<pre class="r"><code>male_survival_rate = sum((train_data$Survived ==1) &amp; (train_data$Sex == &quot;male&quot;))/sum(train_data$Sex == &quot;male&quot;)
+cat(&quot;Fraction of Males who survived =&quot;, format(male_survival_rate))</code></pre>
+<pre><code>## Fraction of Males who survived = 0.1889081</code></pre>
+<pre class="r"><code>class1_survival_rate = sum((train_data$Survived ==1) &amp; (train_data$Pclass == 1))/sum(train_data$Pclass == 1)
+cat(&quot;Fraction of First class who survived =&quot;, format(class1_survival_rate))</code></pre>
+<pre><code>## Fraction of First class who survived = 0.6296296</code></pre>
+<pre class="r"><code>class2_survival_rate = sum((train_data$Survived ==1) &amp; (train_data$Pclass == 2))/sum(train_data$Pclass == 2)
+cat(&quot;Fraction of Second Class who survived =&quot;, format(class2_survival_rate))</code></pre>
+<pre><code>## Fraction of Second Class who survived = 0.4728261</code></pre>
+<pre class="r"><code>class3_survival_rate = sum((train_data$Survived ==1) &amp; (train_data$Pclass == 3))/sum(train_data$Pclass == 3)
+cat(&quot;Fraction of Third Class who survived =&quot;, format(class3_survival_rate))</code></pre>
+<pre><code>## Fraction of Third Class who survived = 0.2423625</code></pre>
+<pre class="r"><code>data.T &lt;- na.omit(subset(train_data, select=c(2,3,5)))
+table(data.T)</code></pre>
+<pre><code>## , , Sex = female
+## 
+##         Pclass
+## Survived   1   2   3
+##        0   3   6  72
+##        1  91  70  72
+## 
+## , , Sex = male
+## 
+##         Pclass
+## Survived   1   2   3
+##        0  77  91 300
+##        1  45  17  47</code></pre>
+<pre class="r"><code>prop.table(table(train_data$Survived))</code></pre>
+<pre><code>## 
+##         0         1 
+## 0.6161616 0.3838384</code></pre>
+<pre class="r"><code>prop.table(table(train_data$Sex))</code></pre>
+<pre><code>## 
+##   female     male 
+## 0.352413 0.647587</code></pre>
+<pre class="r"><code>prop.table(table(train_data$Pclass))</code></pre>
+<pre><code>## 
+##         1         2         3 
+## 0.2424242 0.2065095 0.5510662</code></pre>
+<pre class="r"><code>train_df &lt;- subset(train_data, select = c(2,3,5,6,7,8,10,12))</code></pre>
+<pre class="r"><code>library(dummies)</code></pre>
+<pre><code>## dummies-1.5.6 provided by Decision Patterns</code></pre>
+<pre class="r"><code>data.indicator = subset(train_df, select=c(1:7))
+data.indicator$Sex = dummy(train_df$Sex)</code></pre>
+<pre><code>## Warning in model.matrix.default(~x - 1, model.frame(~x - 1), contrasts = FALSE):
+## non-list contrasts argument ignored</code></pre>
+<pre class="r"><code>cor(data.indicator)</code></pre>
+<pre><code>##                                                                                                                                                                                                                                                                                                                                           Survived
+## Survived                                                                                                                                                                                                                                                                                                                                1.00000000
+## Pclass                                                                                                                                                                                                                                                                                                                                 -0.33848104
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female  0.54335138
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male   -0.54335138
+## Age                                                                                                                                                                                                                                                                                                                                             NA
+## SibSp                                                                                                                                                                                                                                                                                                                                  -0.03532250
+## Parch                                                                                                                                                                                                                                                                                                                                   0.08162941
+## Fare                                                                                                                                                                                                                                                                                                                                    0.25730652
+##                                                                                                                                                                                                                                                                                                                                             Pclass
+## Survived                                                                                                                                                                                                                                                                                                                               -0.33848104
+## Pclass                                                                                                                                                                                                                                                                                                                                  1.00000000
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female -0.13190049
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male    0.13190049
+## Age                                                                                                                                                                                                                                                                                                                                             NA
+## SibSp                                                                                                                                                                                                                                                                                                                                   0.08308136
+## Parch                                                                                                                                                                                                                                                                                                                                   0.01844267
+## Fare                                                                                                                                                                                                                                                                                                                                   -0.54949962
+##                                                                                                                                                                                                                                                                                                                                        Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female
+## Survived                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            0.5433514
+## Pclass                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             -0.1319005
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female                                                                                                                                                                                                                                                                                                                              1.0000000
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male                                                                                                                                                                                                                                                                                                                               -1.0000000
+## Age                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        NA
+## SibSp                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               0.1146308
+## Parch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               0.2454890
+## Fare                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                0.1823328
+##                                                                                                                                                                                                                                                                                                                                        Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male
+## Survived                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         -0.5433514
+## Pclass                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            0.1319005
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female                                                                                                                                                                                                                                                                                                                           -1.0000000
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male                                                                                                                                                                                                                                                                                                                              1.0000000
+## Age                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      NA
+## SibSp                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -0.1146308
+## Parch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -0.2454890
+## Fare                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             -0.1823328
+##                                                                                                                                                                                                                                                                                                                                        Age
+## Survived                                                                                                                                                                                                                                                                                                                                NA
+## Pclass                                                                                                                                                                                                                                                                                                                                  NA
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female  NA
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male    NA
+## Age                                                                                                                                                                                                                                                                                                                                      1
+## SibSp                                                                                                                                                                                                                                                                                                                                   NA
+## Parch                                                                                                                                                                                                                                                                                                                                   NA
+## Fare                                                                                                                                                                                                                                                                                                                                    NA
+##                                                                                                                                                                                                                                                                                                                                              SibSp
+## Survived                                                                                                                                                                                                                                                                                                                               -0.03532250
+## Pclass                                                                                                                                                                                                                                                                                                                                  0.08308136
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female  0.11463081
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male   -0.11463081
+## Age                                                                                                                                                                                                                                                                                                                                             NA
+## SibSp                                                                                                                                                                                                                                                                                                                                   1.00000000
+## Parch                                                                                                                                                                                                                                                                                                                                   0.41483770
+## Fare                                                                                                                                                                                                                                                                                                                                    0.15965104
+##                                                                                                                                                                                                                                                                                                                                              Parch
+## Survived                                                                                                                                                                                                                                                                                                                                0.08162941
+## Pclass                                                                                                                                                                                                                                                                                                                                  0.01844267
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female  0.24548896
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male   -0.24548896
+## Age                                                                                                                                                                                                                                                                                                                                             NA
+## SibSp                                                                                                                                                                                                                                                                                                                                   0.41483770
+## Parch                                                                                                                                                                                                                                                                                                                                   1.00000000
+## Fare                                                                                                                                                                                                                                                                                                                                    0.21622494
+##                                                                                                                                                                                                                                                                                                                                              Fare
+## Survived                                                                                                                                                                                                                                                                                                                                0.2573065
+## Pclass                                                                                                                                                                                                                                                                                                                                 -0.5494996
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}female  0.1823328
+## Sex.{\n    if (length(a &lt;- commandArgs(TRUE)) != 2) \n        stop(&quot;The number of arguments passed to Rscript should be 2.&quot;)\n    x = readRDS(a[1])\n    f = x[[1]]\n    if (is.character(f)) \n        f = eval(parse(text = f), envir = globalenv())\n    r = do.call(f, x[[2]], envir = globalenv())\n    saveRDS(r, a[2])\n}male   -0.1823328
+## Age                                                                                                                                                                                                                                                                                                                                            NA
+## SibSp                                                                                                                                                                                                                                                                                                                                   0.1596510
+## Parch                                                                                                                                                                                                                                                                                                                                   0.2162249
+## Fare                                                                                                                                                                                                                                                                                                                                    1.0000000</code></pre>
+<div id="analysis-looks-like-there-is-a-correlation-between-passenger-class-and-fare-higher-class-would-mean-higher-fare-so-therefor-only-need-one-of-the-two-variables-during-the-regression.-seems-to-have-a-somewhat-strong-correlation-between-if-you-had-sibblings-and-if-it-was-a-family-trip-0.41483770.-not-many-things-that-would-affect-the-correlation-matrix." class="section level2">
+<h2>Analysis: Looks like there is a correlation between passenger class and Fare (higher class would mean higher fare), so therefor only need one of the two variables during the regression. Seems to have a somewhat strong correlation between if you had sibblings, and if it was a family trip (0.41483770). Not many things that would affect the correlation matrix.</h2>
+<pre class="r"><code>is.factor(train_df$Sex)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>contrasts(factor(train_df$Sex))</code></pre>
+<pre><code>##        male
+## female    0
+## male      1</code></pre>
+<pre class="r"><code>levels(factor(train_df$Embarked))</code></pre>
+<pre><code>## [1] &quot;C&quot; &quot;Q&quot; &quot;S&quot;</code></pre>
+<pre class="r"><code>contrasts(factor(train_df$Embarked))</code></pre>
+<pre><code>##   Q S
+## C 0 0
+## Q 1 0
+## S 0 1</code></pre>
+<pre class="r"><code>model &lt;- glm(Survived~. , family=binomial (link =&#39;logit&#39;), data=train_df)
+summary(model)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Survived ~ ., family = binomial(link = &quot;logit&quot;), 
+##     data = train_df)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.7233  -0.6447  -0.3799   0.6326   2.4457  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  5.637407   0.634550   8.884  &lt; 2e-16 ***
+## Pclass      -1.199251   0.164619  -7.285 3.22e-13 ***
+## Sexmale     -2.638476   0.222256 -11.871  &lt; 2e-16 ***
+## Age         -0.043350   0.008232  -5.266 1.39e-07 ***
+## SibSp       -0.363208   0.129017  -2.815  0.00487 ** 
+## Parch       -0.060270   0.123900  -0.486  0.62666    
+## Fare         0.001432   0.002531   0.566  0.57165    
+## EmbarkedQ   -0.823545   0.600229  -1.372  0.17005    
+## EmbarkedS   -0.401213   0.270283  -1.484  0.13770    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 960.90  on 711  degrees of freedom
+## Residual deviance: 632.34  on 703  degrees of freedom
+##   (179 observations deleted due to missingness)
+## AIC: 650.34
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+</div>
+</div>
+<div id="analysis---as-the-class-goes-down-the-chance-of-survival-goes-down-by-1.199251-and-going-from-male-to-female-chances-of-survval-goes-down-by-2.638476-which-are-both-significant.-for-age-goign-down-in-age-doesnt-go-down-that-much-if-you-go-by-one-it-becomes-significant-when-a-passenger-is-signifigantly-older.-the-more-sibblings-there-are-the-chances-of-survival-decreases-by-0.363208.-what-is-not-significant-is-parch-fare-embarkedq-and-embarkeds." class="section level1">
+<h1>Analysis - As the class goes down, the chance of survival goes down by 1.199251 and going from male to female, chances of survval goes down by 2.638476, which are both significant. For age, goign down in age doesn’t go down that much, if you go by one, it becomes significant when a passenger is signifigantly older. The more sibblings there are, the chances of survival decreases by 0.363208. What is not significant is Parch, Fare, EmbarkedQ and EmbarkedS.</h1>
+<pre class="r"><code>anova(model, test=&quot;Chisq&quot;)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model: binomial, link: logit
+## 
+## Response: Survived
+## 
+## Terms added sequentially (first to last)
+## 
+## 
+##          Df Deviance Resid. Df Resid. Dev  Pr(&gt;Chi)    
+## NULL                       711     960.90              
+## Pclass    1   91.784       710     869.12 &lt; 2.2e-16 ***
+## Sex       1  196.973       709     672.15 &lt; 2.2e-16 ***
+## Age       1   25.451       708     646.70 4.537e-07 ***
+## SibSp     1   10.516       707     636.18  0.001184 ** 
+## Parch     1    0.089       706     636.09  0.765471    
+## Fare      1    0.793       705     635.30  0.373258    
+## Embarked  2    2.955       703     632.34  0.228210    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+</div>
+<div id="revised-data" class="section level1">
+<h1>Revised Data</h1>
+<pre class="r"><code>train_df2 &lt;- na.omit(subset(train_df, select=c(1,2,3,4,5)))
+model &lt;-glm(Survived ~. , family=binomial(link=&#39;logit&#39;), data = train_df2)
+summary(model)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Survived ~ ., family = binomial(link = &quot;logit&quot;), 
+##     data = train_df2)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.7714  -0.6445  -0.3836   0.6276   2.4585  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  5.600846   0.543441  10.306  &lt; 2e-16 ***
+## Pclass      -1.317398   0.140900  -9.350  &lt; 2e-16 ***
+## Sexmale     -2.623483   0.214524 -12.229  &lt; 2e-16 ***
+## Age         -0.044385   0.008155  -5.442 5.26e-08 ***
+## SibSp       -0.376119   0.121080  -3.106  0.00189 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 964.52  on 713  degrees of freedom
+## Residual deviance: 636.72  on 709  degrees of freedom
+## AIC: 646.72
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<pre class="r"><code>confint(model)</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre><code>##                   2.5 %      97.5 %
+## (Intercept)  4.56877277  6.70182493
+## Pclass      -1.60095422 -1.04776701
+## Sexmale     -3.05476185 -2.21256757
+## Age         -0.06073701 -0.02871785
+## SibSp       -0.62152704 -0.14560851</code></pre>
+<pre class="r"><code>plot(model)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-1.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-2.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-3.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-19-4.png" width="672" /></p>
+<div id="the-probability-that-we-predicted-taht-the-survivial-rate-is-above-50-and-they-actually-survived-and-probability-that-the-passenger-survived-is-below-50-and-they-actually-did-not-survive." class="section level2">
+<h2>The probability that we predicted taht the survivial rate is above 50%, and they actually survived, and probability that the passenger survived is below 50%, and they actually did not survive.</h2>
+<pre class="r"><code>y = train_df2$Survived - trunc(2*model$fitted)
+hits = sum(y==0)
+hitratio &lt;- hits/length(y)
+hitratio</code></pre>
+<pre><code>## [1] 0.8081232</code></pre>
+<pre class="r"><code>exp(coef(model))</code></pre>
+<pre><code>## (Intercept)      Pclass     Sexmale         Age       SibSp 
+## 270.6553299   0.2678313   0.0725497   0.9565859   0.6865205</code></pre>
+</div>
+</div>
+<div id="analysis---the-odds-of-survival-going-down-in-class-is-about-4-times-worse.-the-odds-of-survival-going-from-male-to-female-is-about-15-times-worse-etc." class="section level1">
+<h1>Analysis - The odds of survival going down in class, is about 4 times worse. The odds of survival going from male to female is about 15 times worse, etc.</h1>
+<pre class="r"><code>exp(cbind(OddsRatio = coef(model), confint(model)))</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre><code>##               OddsRatio       2.5 %      97.5 %
+## (Intercept) 270.6553299 96.42570059 813.8897647
+## Pclass        0.2678313  0.20170396   0.3507200
+## Sexmale       0.0725497  0.04713394   0.1094193
+## Age           0.9565859  0.94107070   0.9716906
+## SibSp         0.6865205  0.53712360   0.8644961</code></pre>
+</div>
