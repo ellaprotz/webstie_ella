@@ -12,10 +12,20 @@ library(tidyverse)
 library(boot)
 library(patchwork)
 df <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Professor_Proposes_Data_Final.csv')
+df
 ```
 
 ## Exploratory Data Analysis
 ```{r}
+df %>% count(Colour)
+color <- df %>%
+  ggplot() +
+  geom_bar(aes(Colour, fill = Cut)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none"
+  )
+
 df %>% count(Cut)
 cut <- df %>%
   ggplot() +
@@ -60,14 +70,14 @@ symmetry <- df %>%
     axis.title.x = element_blank(),
     legend.position = "none"
   )
-cut + clarity + certification + polish + symmetry
+color + cut + clarity + certification + polish + symmetry
 ```
 
 ```{r}
 carat <- ggplot(data = df, 
        mapping = aes(x = Carat, y = Price,
                      colour = Wholesaler)) +
-  geom_point() 
+  geom_point()
 color <- ggplot (df, aes(x = Colour, y = Price)) +
   geom_boxplot()
 cut <- ggplot (df, aes(x = Cut, y = Price)) +
@@ -84,48 +94,115 @@ symmetry <- ggplot (df, aes(x = Symmetry, y = Price)) +
 ```
 ### Bases on the graphs, it shows that the Carat and color has the most impact on price. As Carat increases, the price increases. It also shows that for colors J, K, L all have a higher price, which falls within the Faint yellow and light yellow. D has the highest price which is completely colorless and G which is Near colorless also has very high price. By looking at the chart, and those two factors, the diamond will come out to be around $2500, by just looking. The other boxplots have variation in them, showing that there isn't much correlation between them and price. For example, despite the polish going from Fair to Excelet, the price does not increase as the Polish quality increases, so therefor it shows that that variable does not have much impact on the price. On average, based on all of the factors that go into pricing, we can estimate the price will fall under $3000, so it is under the Professors price. 
 
+## Also based on the point graph, there is a clump of carats from just wholesaler 3 that causes a skew in our a data, so we can disregard that any data from wholesaler 3. 
+
+# New data frame
 ```{r}
-summary(df)
+df1 <- df %>%
+  filter(Wholesaler!=3)
+df1
 ```
 
-
-## Linear Regression Model
+# Manipulating 
 ```{r}
-model <- lm(Price~Carat, data = df)
+sapply(df1, function (x) length(unique(x)))
+```
+
+```{r}
+df1$Colour <- as.factor(df1$Colour)
+df1$Clarity <- as.factor(df1$Clarity)
+df1$Cut <- as.factor(df1$Cut)
+df1$Certification <- as.factor(df1$Certification)
+df1$Polish <- as.factor(df1$Polish)
+df1$Symmetry <- as.factor(df1$Symmetry)
+str(df1)
+```
+
+```{r}
+model <- lm(Price~., data =df1)
+model
+```
+
+```{r}
 summary(model)
 ```
-## Therefore the equation of Price based on  just Carats is y = -200.48 + 2864.73x. This model shows that carat has about 86% impact on the overall price alone. 
+## The regression model that I used was predicting price on all of the different variables. Using this chart, we can go through and pick out the characteristics the professor wants for his ring. The data is as follows: 394.78 intercept, 2104.61 per carat, -533.50 for color J, 646.89 for Clarity S12, 73.79 for cut V, -29.26 for certification GIA, 72.21 for Polish G, and  122.24 for Symmetry V. We can now add up each value to get the total predicted price for the diamond ring. 
 
 ```{r}
-model <- lm(Price~Cut, data = df)
-summary(model)
-```
-## Equation for Very Good cut is y = 2,455.2-1277.1
-
-```{r}
-model <- lm(Price~Colour, data = df)
-summary(model)
+plot(model)
 ```
 
 ```{r}
-model <- lm(Price~Clarity, data = df)
-summary(model)
+anova(model, test="Chisq")
 ```
 
+
+## Adding all of the factors together, there is a grand total of $2641.30 for the diamond the professor wants to buy.
+
+## Bootstrap Validation
 ```{r}
-model <- lm(Price~Certification, data = df)
-summary(model)
+set.seed(1)
+head(df1)
+dim(df1)
+train <- sample(240, 120)
+head(train)
+```
+## Boostrap for Carat and Price
+```{r}
+boot.fn <- function(data, index) {
+  return(coef(lm(Price~Carat, data = df1, subset = index)))
+}
+boot.fn(Auto, 1:240)
+set.seed(1)
+boot.fn(df1, sample(240, 240, replace = T))
+boot(df1, boot.fn, 100)
+boot.out <- boot(df1, boot.fn, 100)
+plot(boot.out)
+
+boot.fn <- function(data, index) {
+  return(coef(lm(Price~Carat, data = df1, subset = index)))
+}
+boot.fn(df1, 1:220)
+boot(df1, boot.fn, 1000)
+boot.out <- boot(df1, boot.fn, 1000)
+plot(boot.out)
 ```
 
+## Bootstrap for Colour and Price
 ```{r}
-model <- lm(Price~Polish, data = df)
-summary(model)
+boot.fn <- function(data, index) {
+  return(coef(lm(Price~Colour, data = df1, subset = index)))
+}
+boot.fn(Auto, 1:240)
+set.seed(1)
+boot.fn(df1, sample(240, 240, replace = T))
+boot(df1, boot.fn, 100)
+boot.out <- boot(df1, boot.fn, 100)
+plot(boot.out)
+
+boot.fn <- function(data, index) {
+  return(coef(lm(Price~Colour, data = df1, subset = index)))
+}
+boot.fn(df1, 1:220)
+boot(df1, boot.fn, 1000)
+boot.out <- boot(df1, boot.fn, 1000)
+plot(boot.out)
 ```
 
+## Boostrap for Clarity and Price
 ```{r}
-model <- lm(Price~Symmetry, data = df)
-summary(model)
+boot.fn <- function(data, index) {
+  return(coef(lm(Price~Clarity, data = df1, subset = index)))
+}
+boot.fn(Auto, 1:240)
+set.seed(1)
+boot.fn(df1, sample(240, 240, replace = T))
+boot(df1, boot.fn, 100)
+boot.out <- boot(df1, boot.fn, 100)
+plot(boot.out)
 ```
+
+## I did a boostrap model for Clarity, Colour and Carat becuase those are the three most important factors of the pricing. 
 
 
 

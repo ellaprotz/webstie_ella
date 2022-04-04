@@ -1,0 +1,1144 @@
+---
+title: A02 Revised
+author: R package build
+date: '2022-03-30'
+slug: a02-revised
+categories: []
+tags: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+## ✓ tibble  3.1.6     ✓ dplyr   1.0.8
+## ✓ tidyr   1.2.0     ✓ stringr 1.4.0
+## ✓ readr   2.1.2     ✓ forcats 0.5.1</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(boot)
+library(patchwork)
+df &lt;- read.csv(file = &#39;https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Professor_Proposes_Data_Final.csv&#39;)
+df</code></pre>
+<pre><code>##     Carat Colour Clarity Cut Certification Polish Symmetry Price Wholesaler
+## 1    0.92      I     SI2   G           AGS      V        V  3000          1
+## 2    0.92      I     SI2   V           AGS      G        G  3000          1
+## 3    0.82      F     SI2   I           GIA      X        X  3004          1
+## 4    0.81      G     SI1   I           GIA      X        V  3004          1
+## 5    0.90      J     VS2   V           GIA      V        V  3006          1
+## 6    0.87      F     SI2   I           AGS      G        V  3007          1
+## 7    0.80      D     SI2   I           GIA      V        V  3008          1
+## 8    0.84      F     SI1   G           GIA      V        V  3010          1
+## 9    0.80      D     SI2   V           GIA      V        V  3012          1
+## 10   0.80      D     SI2   V           GIA      V        X  3012          1
+## 11   0.85      G     SI2   I           GIA      V        V  3014          1
+## 12   0.83      G     SI2   I           GIA      X        X  3014          1
+## 13   0.82      H     VS1   G           AGS      G        V  3015          1
+## 14   0.82      G     SI1   I           GIA      X        X  3015          1
+## 15   0.80      F     SI1   V           GIA      V        V  3022          1
+## 16   0.91      J     SI1   V           GIA      V        V  3023          1
+## 17   0.81      F     SI1   V           AGS      V        V  3027          1
+## 18   0.90      I     SI1   V           GIA      X        V  3028          1
+## 19   0.81      E     SI2   I           GIA      V        X  3029          1
+## 20   0.81      E     SI2   I           GIA      X        X  3029          1
+## 21   0.81      E     SI2   I           GIA      G        G  3031          1
+## 22   0.80      I     VS1   I           AGS      I        I  3031          1
+## 23   0.80      I     VS1   I           AGS      I        I  3031          1
+## 24   0.80      G     SI1   I           GIA      X        V  3035          1
+## 25   0.81      H     SI1   V           GIA      G        V  3036          1
+## 26   0.91      H     SI2   G           GIA      V        G  3038          1
+## 27   0.83      D     SI2   G           GIA      G        G  3041          1
+## 28   0.83      I     VS2   V           GIA      G        G  3041          1
+## 29   0.88      I     SI1   I           AGS      I        I  3042          1
+## 30   0.90      G     SI2   F           GIA      V        V  3043          1
+## 31   0.90      H     SI2   V           GIA      V        G  3043          1
+## 32   0.90      G     SI2   F           GIA      G        V  3043          1
+## 33   0.91      I     SI2   I           GIA      V        V  3044          1
+## 34   0.81      D     SI2   V           GIA      G        G  3044          1
+## 35   0.81      F     SI1   V           GIA      X        X  3049          1
+## 36   0.85      E     SI2   I           GIA      V        X  3051          1
+## 37   0.85      F     SI2   V           AGS      G        G  3051          1
+## 38   0.81      E     SI2   V           GIA      V        G  3051          1
+## 39   0.81      I     VS1   I           AGS      I        I  3053          1
+## 40   0.80      F     SI1   V           GIA      G        G  3053          1
+## 41   0.90      H     SI2   F           GIA      V        G  3056          1
+## 42   0.81      I     VS1   G           GIA      G        G  3057          1
+## 43   0.80      H     VS1   V           GIA      V        V  3059          1
+## 44   0.80      E     SI2   V           GIA      V        V  3062          1
+## 45   0.90      J     VS2   G           AGS      X        X  3064          1
+## 46   0.80      E     SI2   V           GIA      V        G  3064          1
+## 47   0.80      I     VS1   I           GIA      X        V  3067          1
+## 48   0.90      I     SI2   G           GIA      V        V  3069          1
+## 49   0.90      I     SI2   V           GIA      V        V  3069          1
+## 50   0.80      E     SI2   V           GIA      X        V  3071          1
+## 51   0.82      H     SI1   V           GIA      G        G  3072          1
+## 52   0.81      G     SI2   I           GIA      V        V  3079          1
+## 53   0.81      E     SI1   V           GIA      X        X  3079          1
+## 54   0.80      H     VS2   I           AGS      I        I  3080          1
+## 55   0.90      F     SI2   F           GIA      v        G  3081          1
+## 56   0.90      I     SI1   G           GIA      V        G  3081          1
+## 57   0.82      I     VS2   I           GIA      X        X  3085          1
+## 58   0.80      H     SI1   V           GIA      V        V  3086          1
+## 59   0.91      H     SI2   F           GIA      V        V  3089          1
+## 60   0.92      J     SI1   V           GIA      V        V  3091          1
+## 61   1.00      L     SI3   F           EGL      F        F  1856          2
+## 62   1.06      L     SI3   F           EGL      G        G  1892          2
+## 63   1.00      K      I2   F           GIA      V        V  1918          2
+## 64   1.01      G      I2   F           GIA      G        V  1929          2
+## 65   1.04      J      I1   G           EGL      G        G  1966          2
+## 66   1.05      J      I1   G           EGL      V        G  1985          2
+## 67   1.23      I      I2   G           GIA      G        F  1988          2
+## 68   1.18      H      I2   F           DOW      G        F  2031          2
+## 69   1.02      I      I2   X           GIA      G        G  2035          2
+## 70   1.00      I      I2   F           GIA      G        V  2045          2
+## 71   1.00      L      I1   X           GIA      X        G  2049          2
+## 72   1.05      H      I2   X           GIA      V        V  2065          2
+## 73   1.00      G      I1   F           EGL      G        F  2070          2
+## 74   1.02      J      I1   F           EGL      G        G  2100          2
+## 75   1.00      H     SI3   F           EGL      F        F  2101          2
+## 76   1.00      F      I1   I           EGL      G        G  2128          2
+## 77   1.01      F      I1   X           EGL      G        G  2149          2
+## 78   1.01      L     SI3   I           EGL      G        G  2156          2
+## 79   1.04      F      I2   X           GIA      G        G  2162          2
+## 80   1.00      H      I1   F           EGL      G        F  2168          2
+## 81   1.00      I      I1   F           EGL      G        G  2170          2
+## 82   1.01      I      I1   F           EGL      G        G  2192          2
+## 83   1.01      I      I1   F           EGL      G        F  2192          2
+## 84   1.10      I      I2   I           GIA      V        F  2195          2
+## 85   1.02      I      I1   F           EGL      G        F  2213          2
+## 86   1.00      K      I1   X           GIA      V        G  2226          2
+## 87   1.00      J      I1   F           EGL      G        G  2228          2
+## 88   1.00      E      I1   G           EGL      G        G  2243          2
+## 89   1.01      E      I2   G           EGL      V        G  2252          2
+## 90   1.21      L      I2   X           GIA      G        G  2263          2
+## 91   1.00      K     SI3   X           EGL      G        V  2288          2
+## 92   1.16      I      I1   F           EGL      G        G  2292          2
+## 93   1.17      H      I2   X           GIA      V        V  2301          2
+## 94   1.00      F      I1   F           EGL      V        G  2306          2
+## 95   1.04      K      I1   X           EGL      V        V  2308          2
+## 96   1.00      J     SI3   F           EGL      G        G  2310          2
+## 97   1.00      E      I2   X           GIA      G        G  2316          2
+## 98   1.01      H      I1   X           EGL      V        X  2321          2
+## 99   1.09      G      I2   X           GIA      G        G  2330          2
+## 100  1.02      K     SI3   V           EGL      G        G  2333          2
+## 101  1.05      F      I2   G           GIA      F        F  2338          2
+## 102  1.10      G      I2   X           GIA      V        V  2351          2
+## 103  1.00      F      I1   G           EGL      G        G  2359          2
+## 104  1.06      F      I2   G           GIA      G        V  2360          2
+## 105  1.01      G      I1   G           EGL      V        V  2363          2
+## 106  1.01      G      I1   I           EGL      V        V  2363          2
+## 107  1.00      I      I1   F           EGL      G        G  2364          2
+## 108  1.03      H      I1   I           EGL      V        V  2367          2
+## 109  1.15      J      I1   F           EGL      G        G  2368          2
+## 110  1.00      K     SI2   X           EGL      G        G  2380          2
+## 111  1.00      K     SI2   F           EGL      G        F  2380          2
+## 112  1.01      F      I1   X           EGL      G        V  2382          2
+## 113  1.07      L     SI3   X           EGL      G        G  2386          2
+## 114  1.04      H      I1   I           EGL      V        X  2390          2
+## 115  1.25      J      I2   F           GIA      G        G  2397          2
+## 116  1.05      I      I1   F           GIA      G        G  2413          2
+## 117  1.09      K      I1   X           GIA      G        G  2427          2
+## 118  1.14      L      I2   X           GIA      V        V  2437          2
+## 119  1.11      G      I2   X           GIA      G        G  2438          2
+## 120  1.21      K     SI3   F           EGL      G        G  2446          2
+## 121  1.00      E     SI3   F           EGL      G        G  3080          2
+## 122  1.03      G      I1   X           GIA      V        G  3082          2
+## 123  1.03      G      I1   F           GIA      G        V  3082          2
+## 124  1.21      J      I1   X           GIA      G        G  3083          2
+## 125  1.04      G      I1   I           GIA      V        G  3084          2
+## 126  1.19      H      I1   F           EGL      V        G  3085          2
+## 127  1.01      H     SI2   G           EGL      V        V  3086          2
+## 128  1.04      J     SI1   X           EGL      V        X  3089          2
+## 129  1.02      H      I1   X           GIA      G        F  3089          2
+## 130  1.20      I      I1   F           EGL      V        G  3093          2
+## 131  1.20      I      I1   F           EGL      G        G  3093          2
+## 132  1.02      K     VS2   I           EGL      X        X  3093          2
+## 133  1.04      F     SI3   I           EGL      V        X  3093          2
+## 134  1.01      E      I1   G           GIA      X        V  3098          2
+## 135  1.00      G      I1   X           GIA      X        V  3101          2
+## 136  1.01      I     SI2   G           EGL      V        G  3102          2
+## 137  1.00      E     SI3   X           EGL      G        G  3105          2
+## 138  1.01      D      I1   F           GIA      V        G  3107          2
+## 139  1.43      I      I2   X           GIA      G        G  3108          2
+## 140  1.00      J     SI2   X           EGL      G        G  3108          2
+## 141  1.00      J     SI2   I           EGL      V        X  3108          2
+## 142  1.00      J     SI2   X           EGL      V        G  3108          2
+## 143  1.11      K     SI2   X           GIA      V        V  3108          2
+## 144  1.01      G      I1   X           GIA      G        G  3108          2
+## 145  1.01      F     SI3   I           EGL      V        G  3111          2
+## 146  1.01      J     SI1   X           EGL      V        X  3111          2
+## 147  1.14      E      I1   G           EGL      G        G  3112          2
+## 148  1.12      G      I1   X           GIA      V        V  3112          2
+## 149  1.00      J     SI1   X           EGL      V        G  3114          2
+## 150  1.01      G     SI3   X           EGL      G        G  3118          2
+## 151  1.02      D     SI3   I           EGL      X        X  3119          2
+## 152  1.11      I     SI2   X           EGL      V        G  3122          2
+## 153  1.10      H      I1   X           GIA      V        V  3124          2
+## 154  1.13      K     VS1   X           EGL      G        V  3124          2
+## 155  1.00      J     SI2   F           GIA      G        F  3125          2
+## 156  1.26      K      I1   X           GIA      V        G  3125          2
+## 157  1.00      D      I1   G           EGL      G        G  3126          2
+## 158  1.00      D      I1   X           EGL      G        V  3126          2
+## 159  1.00      I     SI2   G           EGL      V        G  3127          2
+## 160  1.00      I     SI2   G           EGL      V        V  3127          2
+## 161  1.02      I     SI3   X           EGL      G        G  3130          2
+## 162  1.01      K     SI2   X           GIA      X        V  3135          2
+## 163  1.00      H     SI2   I           EGL      G        V  3135          2
+## 164  1.00      H     SI2   G           EGL      G        G  3135          2
+## 165  1.00      G      I1   I           GIA      G        G  3136          2
+## 166  1.02      D      I1   F           EGL      G        V  3137          2
+## 167  1.23      K     SI2   X           GIA      X        G  3137          2
+## 168  1.01      G     SI2   F           EGL      G        V  3138          2
+## 169  1.07      E     SI3   X           EGL      G        V  3138          2
+## 170  1.01      J     SI2   X           EGL      V        V  3139          2
+## 171  1.01      J     SI2   I           EGL      V        X  3139          2
+## 172  1.01      J     SI2   X           EGL      V        V  3139          2
+## 173  1.01      J     SI2   X           EGL      V        V  3139          2
+## 174  1.01      J     SI2   I           EGL      V        X  3139          2
+## 175  1.01      J     SI2   I           EGL      V        V  3139          2
+## 176  1.01      J     SI2   X           EGL      G        V  3139          2
+## 177  1.15      E      I1   X           EGL      V        V  3140          2
+## 178  1.03      G      I1   X           GIA      G        G  3141          2
+## 179  1.04      J     SI1   X           EGL      V        V  3142          2
+## 180  1.01      J     SI1   G           EGL      G        V  3145          2
+## 181  1.03      H      I1   X           EGL      G        G  2451          2
+## 182  1.00      J     SI2   G           EGL      G        V  2452          2
+## 183  1.15      J     SI3   G           EGL      G        G  2467          2
+## 184  1.01      J     SI2   I           EGL      V        X  2476          2
+## 185  1.00      E      I1   F           EGL      V        G  2486          2
+## 186  1.12      K      I1   F           GIA      G        F  2493          2
+## 187  1.01      E      I2   X           GIA      G        G  2495          2
+## 188  1.03      K     SI3   I           EGL      G        G  2511          2
+## 189  1.01      E      I1   X           EGL      G        V  2511          2
+## 190  1.01      E      I1   G           EGL      G        G  2511          2
+## 191  1.01      E      I1   X           EGL      G        G  2511          2
+## 192  1.22      K      I1   F           EGL      V        G  2516          2
+## 193  1.20      G      I2   X           GIA      G        G  2565          2
+## 194  1.10      G      I1   X           EGL      V        V  2574          2
+## 195  1.16      J      I1   V           EGL      G        G  2584          2
+## 196  1.02      E      I1   X           EGL      V        V  2586          2
+## 197  1.23      L      I1   X           GIA      G        G  2586          2
+## 198  1.00      J     SI2   F           EGL      V        G  2591          2
+## 199  1.01      F     SI3   X           EGL      V        V  2600          2
+## 200  1.19      H      I2   X           GIA      G        G  2600          2
+## 201  1.02      H      I1   F           EGL      G        F  2601          2
+## 202  1.33      L     SI3   X           EGL      G        V  2607          2
+## 203  1.10      F      I2   X           GIA      V        V  2617          2
+## 204  1.58      K      I2   F           GIA      F        F  2620          2
+## 205  1.04      K      I1   X           GIA      G        G  2625          2
+## 206  1.01      J     SI3   X           EGL      V        V  2625          2
+## 207  1.00      H      I1   G           GIA      G        G  2625          2
+## 208  1.02      G      I1   I           EGL      V        X  2625          2
+## 209  1.02      K     SI2   X           EGL      V        V  2629          2
+## 210  1.01      H     SI3   F           EGL      G        F  2640          2
+## 211  1.01      I      I1   X           GIA      V        G  2651          2
+## 212  1.01      J     SI3   F           EGL      G        G  2654          2
+## 213  1.00      L     VS2   F           GIA      G        G  2655          2
+## 214  1.00      I     SI3   F           EGL      G        G  2660          2
+## 215  1.01      K     SI1   F           EGL      V        G  2668          2
+## 216  1.00      G     SI3   F           EGL      F        F  2678          2
+## 217  1.00      K     SI2   I           GIA      V        V  2682          2
+## 218  1.14      F      I1   I           EGL      V        V  2689          2
+## 219  1.00      K     SI1   G           EGL      G        V  2689          2
+## 220  1.01      D      I1   X           EGL      V        X  2692          2
+## 221  1.03      D      I1   X           EGL      G        V  2692          2
+## 222  1.03      D      I1   F           EGL      G        G  2692          2
+## 223  1.05      J      I1   X           GIA      V        G  2693          2
+## 224  1.41      K      I2   X           GIA      G        G  2704          2
+## 225  1.16      D      I2   F           GIA      G        G  2714          2
+## 226  1.01      K     SI1   I           EGL      V        X  2716          2
+## 227  1.00      E      I1   G           EGL      G        G  2730          2
+## 228  1.00      K     SI2   X           GIA      V        V  2745          2
+## 229  1.00      J     SI2   F           EGL      G        F  2745          2
+## 230  1.06      F      I1   F           EGL      G        G  2745          2
+## 231  1.01      E      I1   X           EGL      G        V  2757          2
+## 232  1.12      L     SI2   G           EGL      G        G  2765          2
+## 233  1.07      L     SI2   X           GIA      V        V  2770          2
+## 234  1.04      D      I1   I           EGL      X        X  2772          2
+## 235  1.00      J     SI2   X           EGL      V        V  2772          2
+## 236  1.10      G      I1   X           EGL      G        V  2772          2
+## 237  1.16      F      I1   X           GIA      G        F  2775          2
+## 238  1.00      G      I1   X           GIA      V        V  2779          2
+## 239  1.00      J     SI1   F           EGL      V        G  2780          2
+## 240  1.00      J     SI1   F           EGL      G        F  2780          2
+## 241  0.09      D     SI1   X           IGI      G        G   190          3
+## 242  0.09      E     SI1   I           IGI      G        G   160          3
+## 243  0.09      F     SI1   I           IGI      V        G   160          3
+## 244  0.09      E     SI1   I           IGI      G        G   180          3
+## 245  0.09      E     VS1   I           IGI      V        G   190          3
+## 246  0.10      E     VS2   V           IGI      V        G   330          3
+## 247  0.10      F     VS1   V           IGI      G        G   180          3
+## 248  0.10      E     VS2   X           IGI      G        G   180          3
+## 249  0.10      F     VS2   X           IGI      V        G   180          3
+## 250  0.10      F     SI1   X           IGI      G        G   190          3
+## 251  0.10      F     SI1   X           IGI      G        G   160          3
+## 252  0.10      E     SI1   V           IGI      G        G   160          3
+## 253  0.10      E     SI2   G           IGI      V        G   190          3
+## 254  0.10      E     VS1   V           IGI      G        G   180          3
+## 255  0.10      E     VS1   X           IGI      G        G   180          3
+## 256  0.10      F     SI1   V           IGI      G        G   180          3
+## 257  0.10      F     VS1   X           IGI      G        G   180          3
+## 258  0.10      E     VS2   V           IGI      G        G   180          3
+## 259  0.11      F     SI1   G           IGI      G        G   160          3
+## 260  0.11      F     VS2   G           IGI      G        G   190          3
+## 261  0.11      E     SI1   X           IGI      G        G   160          3
+## 262  0.11      F     VS2   V           IGI      V        V   180          3
+## 263  0.11      F     SI1   I           IGI      V        G   180          3
+## 264  0.20      F     SI1   X           IGI      G        G   320          3
+## 265  0.21      G     SI1   V           IGI      G        G   330          3
+## 266  0.21      F     SI1   I           IGI      G        G   330          3
+## 267  0.21      E     VS2   V           IGI      V        G   340          3
+## 268  0.21      E    VVS2   X           IGI      V        G   320          3
+## 269  0.21      F     SI1   X           IGI      V        V   330          3
+## 270  0.21      F     VS2   X           IGI      G        G   340          3
+## 271  0.21      E     VS2   I           IGI      V        G   340          3
+## 272  0.22      E     SI1   I           IGI      G        G   360          3
+## 273  0.22      F     SI1   V           IGI      G        G   330          3
+## 274  0.22      D     SI1   X           IGI      G        G   340          3
+## 275  0.22      F     SI1   V           IGI      G        G   330          3
+## 276  0.22      E     SI1   I           IGI      V        V   340          3
+## 277  0.23      E     SI1   V           IGI      V        V   404          3
+## 278  0.23      F    VVS2   X           IGI      V        V   665          3
+## 279  0.23      F     SI1   X           IGI      G        G   360          3
+## 280  0.23      E     SI1   I           IGI      G        G   360          3
+## 281  0.23      F     VS2   X           IGI      V        G   360          3
+## 282  0.23      F     SI1   V           IGI      G        G   340          3
+## 283  0.23      F     SI1   X           IGI      G        G   360          3
+## 284  0.27      E     VS2   I           GIA      V        V   594          3
+## 285  0.28      E    VVS2   X           GIA      V        X   658          3
+## 286  0.28      E    VVS2   X           GIA      V        X   658          3
+## 287  0.30      I      I1   I           GIA      G        V   372          3
+## 288  0.30      J     SI2   V           GIA      V        V   439          3
+## 289  0.30      I     SI2   X           GIA      V        V   466          3
+## 290  0.30      I     SI2   V           GIA      G        V   466          3
+## 291  0.30      D      I1   X           GIA      V        V   466          3
+## 292  0.30      J     SI1   V           GIA      G        X   466          3
+## 293  0.30      J     SI1   G           GIA      X        X   466          3
+## 294  0.30      J     SI1   V           GIA      X        V   466          3
+## 295  0.30      K     VS1   V           GIA      X        V   466          3
+## 296  0.30      J     VS2   F           GIA      V        V   468          3
+## 297  0.30      I     SI2   V           GIA      G        V   476          3
+## 298  0.30      I     SI2   I           GIA      X        X   476          3
+## 299  0.30      J     SI1   X           GIA      V        G   476          3
+## 300  0.30      J     SI1   V           GIA      X        V   476          3
+## 301  0.30      J     SI1   X           GIA      X        G   476          3
+## 302  0.30      J     SI1   X           GIA      V        V   476          3
+## 303  0.30      J     SI1   G           GIA      V        V   476          3
+## 304  0.30      D      I1   X           GIA      V        V   490          3
+## 305  0.30      H     SI2   G           GIA      V        V   493          3
+## 306  0.30      H     SI2   X           GIA      V        V   493          3
+## 307  0.30      H     SI2   X           GIA      V        V   493          3
+## 308  0.30      H     SI2   I           GIA      V        V   493          3
+## 309  0.30      H     SI2   X           GIA      V        V   493          3
+## 310  0.30      H     SI2   X           GIA      V        V   493          3
+## 311  0.30      I     SI1   I           GIA      V        V   493          3
+## 312  0.30      G     SI2   G           GIA      G        G   493          3
+## 313  0.30      J     VS2   X           GIA      V        V   493          3
+## 314  0.30      J     VS2   V           GIA      V        V   493          3
+## 315  0.30      J     VS2   V           GIA      G        V   493          3
+## 316  0.30      J     VS2   I           GIA      V        V   493          3
+## 317  0.30      J     VS2   V           GIA      V        V   493          3
+## 318  0.30      J     VS2   X           GIA      V        V   493          3
+## 319  0.30      H     SI2   G           GIA      X        X   504          3
+## 320  0.30      H     SI2   V           GIA      X        V   504          3
+## 321  0.30      H     SI2   X           GIA      X        X   504          3
+## 322  0.30      H     SI1   F           GIA      V        X   519          3
+## 323  0.30      H     SI1   V           GIA      V        V   519          3
+## 324  0.30      E     SI2   X           GIA      G        G   519          3
+## 325  0.30      F     SI2   V           GIA      V        V   520          3
+## 326  0.30      F     SI2   V           GIA      V        V   520          3
+## 327  0.30      F     SI2   V           GIA      G        V   520          3
+## 328  0.30      F     SI2   X           GIA      V        G   520          3
+## 329  0.30      F     SI2   I           GIA      V        V   520          3
+## 330  0.30      F     SI2   I           GIA      V        V   520          3
+## 331  0.30      F     SI2   I           GIA      G        V   520          3
+## 332  0.30      F     SI2   I           GIA      V        V   520          3
+## 333  0.30      F     SI2   V           GIA      V        V   520          3
+## 334  0.30      F     SI2   V           GIA      V        V   520          3
+## 335  0.30      G     SI2   X           GIA      X        V   520          3
+## 336  0.30      G     SI2   I           GIA      V        V   520          3
+## 337  0.30      G     SI2   I           GIA      V        V   520          3
+## 338  0.30      I     SI1   V           GIA      X        V   520          3
+## 339  0.30      I     SI1   V           GIA      V        V   520          3
+## 340  0.30      I     SI1   V           GIA      V        X   520          3
+## 341  0.30      I     SI1   V           GIA      X        X   520          3
+## 342  0.30      F     SI2   I           GIA      G        G   520          3
+## 343  0.30      F     SI2   V           GIA      V        X   520          3
+## 344  0.30      G     SI2   G           GIA      V        V   520          3
+## 345  0.30      G     SI2   V           GIA      X        V   520          3
+## 346  0.30      G     SI2   X           GIA      V        V   520          3
+## 347  0.30      G     SI2   X           GIA      V        V   520          3
+## 348  0.30      G     SI2   V           GIA      G        V   520          3
+## 349  0.30      I     SI1   G           GIA      V        V   520          3
+## 350  0.30      I     SI1   V           GIA      V        V   520          3
+## 351  0.30      I     SI1   V           GIA      G        V   520          3
+## 352  0.30      I     SI1   V           GIA      V        V   520          3
+## 353  0.30      I     SI1   V           GIA      V        V   520          3
+## 354  0.30      I     SI1   I           GIA      V        V   520          3
+## 355  0.30      I     SI1   F           GIA      G        V   520          3
+## 356  0.30      I     SI1   X           GIA      V        G   520          3
+## 357  0.30      I     SI1   I           GIA      G        G   520          3
+## 358  0.30      I     SI1   I           GIA      V        V   520          3
+## 359  0.30      I     SI1   I           GIA      V        V   520          3
+## 360  0.30      I     SI1   V           GIA      V        V   520          3
+## 361  0.30      I     SI1   X           GIA      X        V   520          3
+## 362  0.30      J     VS1   V           GIA      X        V   520          3
+## 363  0.30      J     VS1   X           GIA      V        V   520          3
+## 364  0.30      J     VS1   V           GIA      V        V   520          3
+## 365  0.30      J     VS1   V           GIA      V        X   520          3
+## 366  0.30      J     VS1   X           GIA      V        X   520          3
+## 367  0.30      J     VS1   V           GIA      V        V   520          3
+## 368  0.30      J     VS1   X           GIA      V        V   520          3
+## 369  0.30      J     VS1   V           GIA      V        V   520          3
+## 370  0.30      J     VS1   X           GIA      G        V   520          3
+## 371  0.30      J     VS1   X           GIA      V        V   520          3
+## 372  0.30      J     VS1   G           GIA      X        V   520          3
+## 373  0.30      J     VS1   X           GIA      V        V   520          3
+## 374  0.30      J     VS1   X           GIA      X        X   520          3
+## 375  0.30      J     VS1   I           GIA      V        G   520          3
+## 376  0.30      J     VS1   V           GIA      V        V   520          3
+## 377  0.30      J     VS1   I           GIA      V        V   520          3
+## 378  0.30      K    VVS2   X           GIA      V        V   520          3
+## 379  0.30      G     SI2   I           GIA      X        V   531          3
+## 380  0.30      I     SI1   X           GIA      V        V   531          3
+## 381  0.30      I     SI1   V           GIA      G        V   531          3
+## 382  0.30      I     SI1   I           GIA      V        V   531          3
+## 383  0.30      I     SI1   X           GIA      X        V   531          3
+## 384  0.30      D     SI2   G           GIA      V        V   544          3
+## 385  0.30      G     SI1   V           GIA      V        V   544          3
+## 386  0.30      E     SI2   I           GIA      X        X   547          3
+## 387  0.30      E     SI2   X           GIA      X        V   547          3
+## 388  0.30      H     SI1   G           GIA      X        X   547          3
+## 389  0.30      H     SI1   V           GIA      V        G   547          3
+## 390  0.30      H     SI1   X           GIA      V        V   547          3
+## 391  0.30      H     SI1   X           GIA      G        G   547          3
+## 392  0.30      H     SI1   I           GIA      X        X   547          3
+## 393  0.30      H     SI1   V           GIA      V        G   547          3
+## 394  0.30      I     VS2   X           GIA      X        V   547          3
+## 395  0.30      E     SI2   V           GIA      G        G   547          3
+## 396  0.30      E     SI2   V           GIA      X        X   547          3
+## 397  0.30      E     SI2   V           GIA      G        V   547          3
+## 398  0.30      E     SI2   V           GIA      V        V   547          3
+## 399  0.30      H     SI1   G           GIA      V        G   547          3
+## 400  0.30      H     SI1   V           GIA      G        X   547          3
+## 401  0.30      H     SI1   X           GIA      V        V   547          3
+## 402  0.30      H     SI1   X           GIA      V        X   547          3
+## 403  0.30      H     SI1   X           GIA      G        G   547          3
+## 404  0.30      H     SI1   X           GIA      G        V   547          3
+## 405  0.30      H     SI1   V           GIA      X        V   547          3
+## 406  0.30      H     SI1   V           GIA      X        V   547          3
+## 407  0.30      H     SI1   V           GIA      V        V   547          3
+## 408  0.30      H     SI1   V           GIA      V        V   547          3
+## 409  0.30      H     SI1   X           GIA      V        V   547          3
+## 410  0.30      H     SI1   V           GIA      X        V   547          3
+## 411  0.30      H     SI1   X           GIA      X        V   547          3
+## 412  0.30      H     SI1   V           GIA      V        V   547          3
+## 413  0.30      H     SI1   V           GIA      X        V   547          3
+## 414  0.30      H     SI1   X           GIA      V        V   547          3
+## 415  0.30      H     SI1   X           GIA      V        V   547          3
+## 416  0.30      H     SI1   X           GIA      V        V   547          3
+## 417  0.30      H     SI1   I           GIA      G        V   547          3
+## 418  0.30      H     SI1   V           GIA      X        V   547          3
+## 419  0.30      H     SI1   X           GIA      V        V   547          3
+## 420  0.30      I     VS2   V           GIA      V        X   547          3
+## 421  0.30      I     VS2   X           GIA      V        V   547          3
+## 422  0.30      I     VS2   X           GIA      X        X   547          3
+## 423  0.30      I     VS2   I           GIA      V        V   547          3
+## 424  0.30      I     VS2   V           GIA      X        V   547          3
+## 425  0.30      I     VS2   V           GIA      V        V   547          3
+## 426  0.30      I     VS2   I           GIA      V        V   547          3
+## 427  0.30      I     VS2   X           GIA      V        V   547          3
+## 428  0.30      I     VS2   I           GIA      X        V   547          3
+## 429  0.30      I     VS2   X           GIA      V        X   547          3
+## 430  0.30      I     VS2   X           GIA      X        V   547          3
+## 431  0.30      I     VS2   I           GIA      G        V   547          3
+## 432  0.30      I     VS2   I           GIA      G        V   547          3
+## 433  0.30      I     VS2   I           GIA      X        V   547          3
+## 434  0.30      I     VS2   I           GIA      X        V   547          3
+## 435  0.30      K    VVS1   X           GIA      X        V   547          3
+## 436  0.30      K    VVS1   V           GIA      X        V   547          3
+## 437  0.30      H     SI1   G           GIA      V        V   559          3
+## 438  0.30      H     SI1   X           GIA      V        V   559          3
+## 439  0.30      H     SI1   V           GIA      X        X   559          3
+## 440  0.30      H     SI1   X           GIA      V        X   559          3</code></pre>
+<div id="exploratory-data-analysis" class="section level2">
+<h2>Exploratory Data Analysis</h2>
+<pre class="r"><code>df %&gt;% count(Colour)</code></pre>
+<pre><code>##   Colour  n
+## 1      D 20
+## 2      E 54
+## 3      F 58
+## 4      G 43
+## 5      H 71
+## 6      I 79
+## 7      J 72
+## 8      K 31
+## 9      L 12</code></pre>
+<pre class="r"><code>color &lt;- df %&gt;%
+  ggplot() +
+  geom_bar(aes(Colour, fill = Cut)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )
+
+df %&gt;% count(Cut)</code></pre>
+<pre><code>##   Cut   n
+## 1   F  59
+## 2   G  49
+## 3   I  86
+## 4   V  97
+## 5   X 149</code></pre>
+<pre class="r"><code>cut &lt;- df %&gt;%
+  ggplot() +
+  geom_bar(aes(Cut, fill = Cut)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )
+
+df %&gt;% count(Clarity)</code></pre>
+<pre><code>##   Clarity   n
+## 1      I1  82
+## 2      I2  28
+## 3     SI1 116
+## 4     SI2 110
+## 5     SI3  26
+## 6     VS1  30
+## 7     VS2  41
+## 8    VVS1   2
+## 9    VVS2   5</code></pre>
+<pre class="r"><code>clarity &lt;- df %&gt;%
+  ggplot() +
+  geom_bar(aes(Clarity, fill = Clarity)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )
+
+df %&gt;% count(Certification)</code></pre>
+<pre><code>##   Certification   n
+## 1           AGS  12
+## 2           DOW   1
+## 3           EGL 119
+## 4           GIA 265
+## 5           IGI  43</code></pre>
+<pre class="r"><code>certification &lt;- df %&gt;%
+  ggplot() +
+  geom_bar(aes(Certification, fill = Certification)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )
+
+df %&gt;% count(Polish)</code></pre>
+<pre><code>##   Polish   n
+## 1      F   5
+## 2      G 165
+## 3      I   5
+## 4      v   1
+## 5      V 203
+## 6      X  61</code></pre>
+<pre class="r"><code>polish &lt;- df %&gt;%
+  ggplot() +
+  geom_bar(aes(Polish, fill = Polish)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )
+
+df %&gt;% count(Symmetry)</code></pre>
+<pre><code>##   Symmetry   n
+## 1        F  21
+## 2        G 157
+## 3        I   5
+## 4        V 206
+## 5        X  51</code></pre>
+<pre class="r"><code>symmetry &lt;- df %&gt;%
+  ggplot() +
+  geom_bar(aes(Symmetry, fill = Symmetry)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = &quot;none&quot;
+  )
+color + cut + clarity + certification + polish + symmetry</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>carat &lt;- ggplot(data = df, 
+       mapping = aes(x = Carat, y = Price,
+                     colour = Wholesaler)) +
+  geom_point()
+color &lt;- ggplot (df, aes(x = Colour, y = Price)) +
+  geom_boxplot()
+cut &lt;- ggplot (df, aes(x = Cut, y = Price)) +
+  geom_boxplot()
+clarity &lt;- ggplot (df, aes(x = Clarity, y = Price)) +
+  geom_boxplot()
+certification &lt;- ggplot (df, aes(x = Certification, y = Price)) +
+  geom_boxplot()
+polish &lt;- ggplot (df, aes(x = Polish, y = Price)) +
+  geom_boxplot()
+symmetry &lt;- ggplot (df, aes(x = Symmetry, y = Price)) +
+  geom_boxplot()
+ carat + cut + color + clarity + certification + polish + symmetry </code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+### Bases on the graphs, it shows that the Carat and color has the most impact on price. As Carat increases, the price increases. It also shows that for colors J, K, L all have a higher price, which falls within the Faint yellow and light yellow. D has the highest price which is completely colorless and G which is Near colorless also has very high price. By looking at the chart, and those two factors, the diamond will come out to be around $2500, by just looking. The other boxplots have variation in them, showing that there isn’t much correlation between them and price. For example, despite the polish going from Fair to Excelet, the price does not increase as the Polish quality increases, so therefor it shows that that variable does not have much impact on the price. On average, based on all of the factors that go into pricing, we can estimate the price will fall under $3000, so it is under the Professors price.</p>
+</div>
+<div id="also-based-on-the-point-graph-there-is-a-clump-of-carats-from-just-wholesaler-3-that-causes-a-skew-in-our-a-data-so-we-can-disregard-that-any-data-from-wholesaler-3." class="section level2">
+<h2>Also based on the point graph, there is a clump of carats from just wholesaler 3 that causes a skew in our a data, so we can disregard that any data from wholesaler 3.</h2>
+</div>
+<div id="new-data-frame" class="section level1">
+<h1>New data frame</h1>
+<pre class="r"><code>df1 &lt;- df %&gt;%
+  filter(Wholesaler!=3)
+df1</code></pre>
+<pre><code>##     Carat Colour Clarity Cut Certification Polish Symmetry Price Wholesaler
+## 1    0.92      I     SI2   G           AGS      V        V  3000          1
+## 2    0.92      I     SI2   V           AGS      G        G  3000          1
+## 3    0.82      F     SI2   I           GIA      X        X  3004          1
+## 4    0.81      G     SI1   I           GIA      X        V  3004          1
+## 5    0.90      J     VS2   V           GIA      V        V  3006          1
+## 6    0.87      F     SI2   I           AGS      G        V  3007          1
+## 7    0.80      D     SI2   I           GIA      V        V  3008          1
+## 8    0.84      F     SI1   G           GIA      V        V  3010          1
+## 9    0.80      D     SI2   V           GIA      V        V  3012          1
+## 10   0.80      D     SI2   V           GIA      V        X  3012          1
+## 11   0.85      G     SI2   I           GIA      V        V  3014          1
+## 12   0.83      G     SI2   I           GIA      X        X  3014          1
+## 13   0.82      H     VS1   G           AGS      G        V  3015          1
+## 14   0.82      G     SI1   I           GIA      X        X  3015          1
+## 15   0.80      F     SI1   V           GIA      V        V  3022          1
+## 16   0.91      J     SI1   V           GIA      V        V  3023          1
+## 17   0.81      F     SI1   V           AGS      V        V  3027          1
+## 18   0.90      I     SI1   V           GIA      X        V  3028          1
+## 19   0.81      E     SI2   I           GIA      V        X  3029          1
+## 20   0.81      E     SI2   I           GIA      X        X  3029          1
+## 21   0.81      E     SI2   I           GIA      G        G  3031          1
+## 22   0.80      I     VS1   I           AGS      I        I  3031          1
+## 23   0.80      I     VS1   I           AGS      I        I  3031          1
+## 24   0.80      G     SI1   I           GIA      X        V  3035          1
+## 25   0.81      H     SI1   V           GIA      G        V  3036          1
+## 26   0.91      H     SI2   G           GIA      V        G  3038          1
+## 27   0.83      D     SI2   G           GIA      G        G  3041          1
+## 28   0.83      I     VS2   V           GIA      G        G  3041          1
+## 29   0.88      I     SI1   I           AGS      I        I  3042          1
+## 30   0.90      G     SI2   F           GIA      V        V  3043          1
+## 31   0.90      H     SI2   V           GIA      V        G  3043          1
+## 32   0.90      G     SI2   F           GIA      G        V  3043          1
+## 33   0.91      I     SI2   I           GIA      V        V  3044          1
+## 34   0.81      D     SI2   V           GIA      G        G  3044          1
+## 35   0.81      F     SI1   V           GIA      X        X  3049          1
+## 36   0.85      E     SI2   I           GIA      V        X  3051          1
+## 37   0.85      F     SI2   V           AGS      G        G  3051          1
+## 38   0.81      E     SI2   V           GIA      V        G  3051          1
+## 39   0.81      I     VS1   I           AGS      I        I  3053          1
+## 40   0.80      F     SI1   V           GIA      G        G  3053          1
+## 41   0.90      H     SI2   F           GIA      V        G  3056          1
+## 42   0.81      I     VS1   G           GIA      G        G  3057          1
+## 43   0.80      H     VS1   V           GIA      V        V  3059          1
+## 44   0.80      E     SI2   V           GIA      V        V  3062          1
+## 45   0.90      J     VS2   G           AGS      X        X  3064          1
+## 46   0.80      E     SI2   V           GIA      V        G  3064          1
+## 47   0.80      I     VS1   I           GIA      X        V  3067          1
+## 48   0.90      I     SI2   G           GIA      V        V  3069          1
+## 49   0.90      I     SI2   V           GIA      V        V  3069          1
+## 50   0.80      E     SI2   V           GIA      X        V  3071          1
+## 51   0.82      H     SI1   V           GIA      G        G  3072          1
+## 52   0.81      G     SI2   I           GIA      V        V  3079          1
+## 53   0.81      E     SI1   V           GIA      X        X  3079          1
+## 54   0.80      H     VS2   I           AGS      I        I  3080          1
+## 55   0.90      F     SI2   F           GIA      v        G  3081          1
+## 56   0.90      I     SI1   G           GIA      V        G  3081          1
+## 57   0.82      I     VS2   I           GIA      X        X  3085          1
+## 58   0.80      H     SI1   V           GIA      V        V  3086          1
+## 59   0.91      H     SI2   F           GIA      V        V  3089          1
+## 60   0.92      J     SI1   V           GIA      V        V  3091          1
+## 61   1.00      L     SI3   F           EGL      F        F  1856          2
+## 62   1.06      L     SI3   F           EGL      G        G  1892          2
+## 63   1.00      K      I2   F           GIA      V        V  1918          2
+## 64   1.01      G      I2   F           GIA      G        V  1929          2
+## 65   1.04      J      I1   G           EGL      G        G  1966          2
+## 66   1.05      J      I1   G           EGL      V        G  1985          2
+## 67   1.23      I      I2   G           GIA      G        F  1988          2
+## 68   1.18      H      I2   F           DOW      G        F  2031          2
+## 69   1.02      I      I2   X           GIA      G        G  2035          2
+## 70   1.00      I      I2   F           GIA      G        V  2045          2
+## 71   1.00      L      I1   X           GIA      X        G  2049          2
+## 72   1.05      H      I2   X           GIA      V        V  2065          2
+## 73   1.00      G      I1   F           EGL      G        F  2070          2
+## 74   1.02      J      I1   F           EGL      G        G  2100          2
+## 75   1.00      H     SI3   F           EGL      F        F  2101          2
+## 76   1.00      F      I1   I           EGL      G        G  2128          2
+## 77   1.01      F      I1   X           EGL      G        G  2149          2
+## 78   1.01      L     SI3   I           EGL      G        G  2156          2
+## 79   1.04      F      I2   X           GIA      G        G  2162          2
+## 80   1.00      H      I1   F           EGL      G        F  2168          2
+## 81   1.00      I      I1   F           EGL      G        G  2170          2
+## 82   1.01      I      I1   F           EGL      G        G  2192          2
+## 83   1.01      I      I1   F           EGL      G        F  2192          2
+## 84   1.10      I      I2   I           GIA      V        F  2195          2
+## 85   1.02      I      I1   F           EGL      G        F  2213          2
+## 86   1.00      K      I1   X           GIA      V        G  2226          2
+## 87   1.00      J      I1   F           EGL      G        G  2228          2
+## 88   1.00      E      I1   G           EGL      G        G  2243          2
+## 89   1.01      E      I2   G           EGL      V        G  2252          2
+## 90   1.21      L      I2   X           GIA      G        G  2263          2
+## 91   1.00      K     SI3   X           EGL      G        V  2288          2
+## 92   1.16      I      I1   F           EGL      G        G  2292          2
+## 93   1.17      H      I2   X           GIA      V        V  2301          2
+## 94   1.00      F      I1   F           EGL      V        G  2306          2
+## 95   1.04      K      I1   X           EGL      V        V  2308          2
+## 96   1.00      J     SI3   F           EGL      G        G  2310          2
+## 97   1.00      E      I2   X           GIA      G        G  2316          2
+## 98   1.01      H      I1   X           EGL      V        X  2321          2
+## 99   1.09      G      I2   X           GIA      G        G  2330          2
+## 100  1.02      K     SI3   V           EGL      G        G  2333          2
+## 101  1.05      F      I2   G           GIA      F        F  2338          2
+## 102  1.10      G      I2   X           GIA      V        V  2351          2
+## 103  1.00      F      I1   G           EGL      G        G  2359          2
+## 104  1.06      F      I2   G           GIA      G        V  2360          2
+## 105  1.01      G      I1   G           EGL      V        V  2363          2
+## 106  1.01      G      I1   I           EGL      V        V  2363          2
+## 107  1.00      I      I1   F           EGL      G        G  2364          2
+## 108  1.03      H      I1   I           EGL      V        V  2367          2
+## 109  1.15      J      I1   F           EGL      G        G  2368          2
+## 110  1.00      K     SI2   X           EGL      G        G  2380          2
+## 111  1.00      K     SI2   F           EGL      G        F  2380          2
+## 112  1.01      F      I1   X           EGL      G        V  2382          2
+## 113  1.07      L     SI3   X           EGL      G        G  2386          2
+## 114  1.04      H      I1   I           EGL      V        X  2390          2
+## 115  1.25      J      I2   F           GIA      G        G  2397          2
+## 116  1.05      I      I1   F           GIA      G        G  2413          2
+## 117  1.09      K      I1   X           GIA      G        G  2427          2
+## 118  1.14      L      I2   X           GIA      V        V  2437          2
+## 119  1.11      G      I2   X           GIA      G        G  2438          2
+## 120  1.21      K     SI3   F           EGL      G        G  2446          2
+## 121  1.00      E     SI3   F           EGL      G        G  3080          2
+## 122  1.03      G      I1   X           GIA      V        G  3082          2
+## 123  1.03      G      I1   F           GIA      G        V  3082          2
+## 124  1.21      J      I1   X           GIA      G        G  3083          2
+## 125  1.04      G      I1   I           GIA      V        G  3084          2
+## 126  1.19      H      I1   F           EGL      V        G  3085          2
+## 127  1.01      H     SI2   G           EGL      V        V  3086          2
+## 128  1.04      J     SI1   X           EGL      V        X  3089          2
+## 129  1.02      H      I1   X           GIA      G        F  3089          2
+## 130  1.20      I      I1   F           EGL      V        G  3093          2
+## 131  1.20      I      I1   F           EGL      G        G  3093          2
+## 132  1.02      K     VS2   I           EGL      X        X  3093          2
+## 133  1.04      F     SI3   I           EGL      V        X  3093          2
+## 134  1.01      E      I1   G           GIA      X        V  3098          2
+## 135  1.00      G      I1   X           GIA      X        V  3101          2
+## 136  1.01      I     SI2   G           EGL      V        G  3102          2
+## 137  1.00      E     SI3   X           EGL      G        G  3105          2
+## 138  1.01      D      I1   F           GIA      V        G  3107          2
+## 139  1.43      I      I2   X           GIA      G        G  3108          2
+## 140  1.00      J     SI2   X           EGL      G        G  3108          2
+## 141  1.00      J     SI2   I           EGL      V        X  3108          2
+## 142  1.00      J     SI2   X           EGL      V        G  3108          2
+## 143  1.11      K     SI2   X           GIA      V        V  3108          2
+## 144  1.01      G      I1   X           GIA      G        G  3108          2
+## 145  1.01      F     SI3   I           EGL      V        G  3111          2
+## 146  1.01      J     SI1   X           EGL      V        X  3111          2
+## 147  1.14      E      I1   G           EGL      G        G  3112          2
+## 148  1.12      G      I1   X           GIA      V        V  3112          2
+## 149  1.00      J     SI1   X           EGL      V        G  3114          2
+## 150  1.01      G     SI3   X           EGL      G        G  3118          2
+## 151  1.02      D     SI3   I           EGL      X        X  3119          2
+## 152  1.11      I     SI2   X           EGL      V        G  3122          2
+## 153  1.10      H      I1   X           GIA      V        V  3124          2
+## 154  1.13      K     VS1   X           EGL      G        V  3124          2
+## 155  1.00      J     SI2   F           GIA      G        F  3125          2
+## 156  1.26      K      I1   X           GIA      V        G  3125          2
+## 157  1.00      D      I1   G           EGL      G        G  3126          2
+## 158  1.00      D      I1   X           EGL      G        V  3126          2
+## 159  1.00      I     SI2   G           EGL      V        G  3127          2
+## 160  1.00      I     SI2   G           EGL      V        V  3127          2
+## 161  1.02      I     SI3   X           EGL      G        G  3130          2
+## 162  1.01      K     SI2   X           GIA      X        V  3135          2
+## 163  1.00      H     SI2   I           EGL      G        V  3135          2
+## 164  1.00      H     SI2   G           EGL      G        G  3135          2
+## 165  1.00      G      I1   I           GIA      G        G  3136          2
+## 166  1.02      D      I1   F           EGL      G        V  3137          2
+## 167  1.23      K     SI2   X           GIA      X        G  3137          2
+## 168  1.01      G     SI2   F           EGL      G        V  3138          2
+## 169  1.07      E     SI3   X           EGL      G        V  3138          2
+## 170  1.01      J     SI2   X           EGL      V        V  3139          2
+## 171  1.01      J     SI2   I           EGL      V        X  3139          2
+## 172  1.01      J     SI2   X           EGL      V        V  3139          2
+## 173  1.01      J     SI2   X           EGL      V        V  3139          2
+## 174  1.01      J     SI2   I           EGL      V        X  3139          2
+## 175  1.01      J     SI2   I           EGL      V        V  3139          2
+## 176  1.01      J     SI2   X           EGL      G        V  3139          2
+## 177  1.15      E      I1   X           EGL      V        V  3140          2
+## 178  1.03      G      I1   X           GIA      G        G  3141          2
+## 179  1.04      J     SI1   X           EGL      V        V  3142          2
+## 180  1.01      J     SI1   G           EGL      G        V  3145          2
+## 181  1.03      H      I1   X           EGL      G        G  2451          2
+## 182  1.00      J     SI2   G           EGL      G        V  2452          2
+## 183  1.15      J     SI3   G           EGL      G        G  2467          2
+## 184  1.01      J     SI2   I           EGL      V        X  2476          2
+## 185  1.00      E      I1   F           EGL      V        G  2486          2
+## 186  1.12      K      I1   F           GIA      G        F  2493          2
+## 187  1.01      E      I2   X           GIA      G        G  2495          2
+## 188  1.03      K     SI3   I           EGL      G        G  2511          2
+## 189  1.01      E      I1   X           EGL      G        V  2511          2
+## 190  1.01      E      I1   G           EGL      G        G  2511          2
+## 191  1.01      E      I1   X           EGL      G        G  2511          2
+## 192  1.22      K      I1   F           EGL      V        G  2516          2
+## 193  1.20      G      I2   X           GIA      G        G  2565          2
+## 194  1.10      G      I1   X           EGL      V        V  2574          2
+## 195  1.16      J      I1   V           EGL      G        G  2584          2
+## 196  1.02      E      I1   X           EGL      V        V  2586          2
+## 197  1.23      L      I1   X           GIA      G        G  2586          2
+## 198  1.00      J     SI2   F           EGL      V        G  2591          2
+## 199  1.01      F     SI3   X           EGL      V        V  2600          2
+## 200  1.19      H      I2   X           GIA      G        G  2600          2
+## 201  1.02      H      I1   F           EGL      G        F  2601          2
+## 202  1.33      L     SI3   X           EGL      G        V  2607          2
+## 203  1.10      F      I2   X           GIA      V        V  2617          2
+## 204  1.58      K      I2   F           GIA      F        F  2620          2
+## 205  1.04      K      I1   X           GIA      G        G  2625          2
+## 206  1.01      J     SI3   X           EGL      V        V  2625          2
+## 207  1.00      H      I1   G           GIA      G        G  2625          2
+## 208  1.02      G      I1   I           EGL      V        X  2625          2
+## 209  1.02      K     SI2   X           EGL      V        V  2629          2
+## 210  1.01      H     SI3   F           EGL      G        F  2640          2
+## 211  1.01      I      I1   X           GIA      V        G  2651          2
+## 212  1.01      J     SI3   F           EGL      G        G  2654          2
+## 213  1.00      L     VS2   F           GIA      G        G  2655          2
+## 214  1.00      I     SI3   F           EGL      G        G  2660          2
+## 215  1.01      K     SI1   F           EGL      V        G  2668          2
+## 216  1.00      G     SI3   F           EGL      F        F  2678          2
+## 217  1.00      K     SI2   I           GIA      V        V  2682          2
+## 218  1.14      F      I1   I           EGL      V        V  2689          2
+## 219  1.00      K     SI1   G           EGL      G        V  2689          2
+## 220  1.01      D      I1   X           EGL      V        X  2692          2
+## 221  1.03      D      I1   X           EGL      G        V  2692          2
+## 222  1.03      D      I1   F           EGL      G        G  2692          2
+## 223  1.05      J      I1   X           GIA      V        G  2693          2
+## 224  1.41      K      I2   X           GIA      G        G  2704          2
+## 225  1.16      D      I2   F           GIA      G        G  2714          2
+## 226  1.01      K     SI1   I           EGL      V        X  2716          2
+## 227  1.00      E      I1   G           EGL      G        G  2730          2
+## 228  1.00      K     SI2   X           GIA      V        V  2745          2
+## 229  1.00      J     SI2   F           EGL      G        F  2745          2
+## 230  1.06      F      I1   F           EGL      G        G  2745          2
+## 231  1.01      E      I1   X           EGL      G        V  2757          2
+## 232  1.12      L     SI2   G           EGL      G        G  2765          2
+## 233  1.07      L     SI2   X           GIA      V        V  2770          2
+## 234  1.04      D      I1   I           EGL      X        X  2772          2
+## 235  1.00      J     SI2   X           EGL      V        V  2772          2
+## 236  1.10      G      I1   X           EGL      G        V  2772          2
+## 237  1.16      F      I1   X           GIA      G        F  2775          2
+## 238  1.00      G      I1   X           GIA      V        V  2779          2
+## 239  1.00      J     SI1   F           EGL      V        G  2780          2
+## 240  1.00      J     SI1   F           EGL      G        F  2780          2</code></pre>
+</div>
+<div id="manipulating" class="section level1">
+<h1>Manipulating</h1>
+<pre class="r"><code>sapply(df1, function (x) length(unique(x)))</code></pre>
+<pre><code>##         Carat        Colour       Clarity           Cut Certification 
+##            40             9             7             5             4 
+##        Polish      Symmetry         Price    Wholesaler 
+##             6             5           172             2</code></pre>
+<pre class="r"><code>df1$Colour &lt;- as.factor(df1$Colour)
+df1$Clarity &lt;- as.factor(df1$Clarity)
+df1$Cut &lt;- as.factor(df1$Cut)
+df1$Certification &lt;- as.factor(df1$Certification)
+df1$Polish &lt;- as.factor(df1$Polish)
+df1$Symmetry &lt;- as.factor(df1$Symmetry)
+str(df1)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    240 obs. of  9 variables:
+##  $ Carat        : num  0.92 0.92 0.82 0.81 0.9 0.87 0.8 0.84 0.8 0.8 ...
+##  $ Colour       : Factor w/ 9 levels &quot;D&quot;,&quot;E&quot;,&quot;F&quot;,&quot;G&quot;,..: 6 6 3 4 7 3 1 3 1 1 ...
+##  $ Clarity      : Factor w/ 7 levels &quot;I1&quot;,&quot;I2&quot;,&quot;SI1&quot;,..: 4 4 4 3 7 4 4 3 4 4 ...
+##  $ Cut          : Factor w/ 5 levels &quot;F&quot;,&quot;G&quot;,&quot;I&quot;,&quot;V&quot;,..: 2 4 3 3 4 3 3 2 4 4 ...
+##  $ Certification: Factor w/ 4 levels &quot;AGS&quot;,&quot;DOW&quot;,&quot;EGL&quot;,..: 1 1 4 4 4 1 4 4 4 4 ...
+##  $ Polish       : Factor w/ 6 levels &quot;F&quot;,&quot;G&quot;,&quot;I&quot;,&quot;v&quot;,..: 5 2 6 6 5 2 5 5 5 5 ...
+##  $ Symmetry     : Factor w/ 5 levels &quot;F&quot;,&quot;G&quot;,&quot;I&quot;,&quot;V&quot;,..: 4 2 5 4 4 4 4 4 4 5 ...
+##  $ Price        : int  3000 3000 3004 3004 3006 3007 3008 3010 3012 3012 ...
+##  $ Wholesaler   : int  1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<pre class="r"><code>model &lt;- lm(Price~., data =df1)
+model</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Price ~ ., data = df1)
+## 
+## Coefficients:
+##      (Intercept)             Carat           ColourE           ColourF  
+##           394.78           2104.61           -125.91           -314.20  
+##          ColourG           ColourH           ColourI           ColourJ  
+##          -248.19           -327.37           -390.34           -533.50  
+##          ColourK           ColourL         ClarityI2        ClaritySI1  
+##          -808.12           -979.94           -595.53            781.68  
+##       ClaritySI2        ClaritySI3        ClarityVS1        ClarityVS2  
+##           646.89            331.39            897.19            870.70  
+##             CutG              CutI              CutV              CutX  
+##            18.69             90.75             73.79             98.99  
+## CertificationDOW  CertificationEGL  CertificationGIA           PolishG  
+##          -349.42           -359.92            -29.26             72.21  
+##          PolishI           Polishv           PolishV           PolishX  
+##           172.81            187.85            101.41            104.37  
+##        SymmetryG         SymmetryI         SymmetryV         SymmetryX  
+##           124.36                NA            122.24             93.53  
+##       Wholesaler  
+##           176.44</code></pre>
+<pre class="r"><code>summary(model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Price ~ ., data = df1)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -436.5 -108.4    0.0  108.5  572.2 
+## 
+## Coefficients: (1 not defined because of singularities)
+##                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)        394.78     233.06   1.694   0.0918 .  
+## Carat             2104.61     186.12  11.308  &lt; 2e-16 ***
+## ColourE           -125.91      61.10  -2.061   0.0406 *  
+## ColourF           -314.20      64.88  -4.843 2.49e-06 ***
+## ColourG           -248.19      61.81  -4.015 8.30e-05 ***
+## ColourH           -327.37      62.46  -5.241 3.90e-07 ***
+## ColourI           -390.34      62.32  -6.264 2.12e-09 ***
+## ColourJ           -533.50      64.24  -8.304 1.28e-14 ***
+## ColourK           -808.12      70.28 -11.498  &lt; 2e-16 ***
+## ColourL           -979.94      80.97 -12.103  &lt; 2e-16 ***
+## ClarityI2         -595.53      51.72 -11.514  &lt; 2e-16 ***
+## ClaritySI1         781.68      60.57  12.906  &lt; 2e-16 ***
+## ClaritySI2         646.89      44.81  14.437  &lt; 2e-16 ***
+## ClaritySI3         331.39      48.51   6.832 9.08e-11 ***
+## ClarityVS1         897.19      94.16   9.529  &lt; 2e-16 ***
+## ClarityVS2         870.70      91.21   9.546  &lt; 2e-16 ***
+## CutG                18.69      44.29   0.422   0.6735    
+## CutI                90.75      48.99   1.852   0.0654 .  
+## CutV                73.79      58.52   1.261   0.2088    
+## CutX                98.99      38.72   2.557   0.0113 *  
+## CertificationDOW  -349.42     213.25  -1.639   0.1028    
+## CertificationEGL  -359.92      89.92  -4.002 8.72e-05 ***
+## CertificationGIA   -29.26      79.70  -0.367   0.7139    
+## PolishG             72.21     101.78   0.709   0.4788    
+## PolishI            172.81     160.80   1.075   0.2838    
+## Polishv            187.85     221.48   0.848   0.3973    
+## PolishV            101.41     108.45   0.935   0.3509    
+## PolishX            104.37     118.42   0.881   0.3792    
+## SymmetryG          124.36      55.45   2.243   0.0260 *  
+## SymmetryI              NA         NA      NA       NA    
+## SymmetryV          122.24      61.57   1.985   0.0484 *  
+## SymmetryX           93.53      78.56   1.190   0.2352    
+## Wholesaler         176.44      72.25   2.442   0.0154 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 184.8 on 208 degrees of freedom
+## Multiple R-squared:  0.7798, Adjusted R-squared:  0.747 
+## F-statistic: 23.76 on 31 and 208 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div id="the-regression-model-that-i-used-was-predicting-price-on-all-of-the-different-variables.-using-this-chart-we-can-go-through-and-pick-out-the-characteristics-the-professor-wants-for-his-ring.-the-data-is-as-follows-394.78-intercept-2104.61-per-carat--533.50-for-color-j-646.89-for-clarity-s12-73.79-for-cut-v--29.26-for-certification-gia-72.21-for-polish-g-and-122.24-for-symmetry-v.-we-can-now-add-up-each-value-to-get-the-total-predicted-price-for-the-diamond-ring." class="section level2">
+<h2>The regression model that I used was predicting price on all of the different variables. Using this chart, we can go through and pick out the characteristics the professor wants for his ring. The data is as follows: 394.78 intercept, 2104.61 per carat, -533.50 for color J, 646.89 for Clarity S12, 73.79 for cut V, -29.26 for certification GIA, 72.21 for Polish G, and 122.24 for Symmetry V. We can now add up each value to get the total predicted price for the diamond ring.</h2>
+<pre class="r"><code>plot(model)</code></pre>
+<pre><code>## Warning: not plotting observations with leverage one:
+##   55, 68</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-2.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-3.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-4.png" width="672" /></p>
+<pre class="r"><code>anova(model, test=&quot;Chisq&quot;)</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: Price
+##                Df   Sum Sq Mean Sq  F value    Pr(&gt;F)    
+## Carat           1  3456697 3456697 101.2258 &lt; 2.2e-16 ***
+## Colour          8  1885061  235633   6.9003 4.772e-08 ***
+## Clarity         6 15503423 2583904  75.6670 &lt; 2.2e-16 ***
+## Cut             4  1445160  361290  10.5800 8.020e-08 ***
+## Certification   3  2320149  773383  22.6477 9.948e-13 ***
+## Polish          5   197540   39508   1.1570   0.33165    
+## Symmetry        3   142990   47663   1.3958   0.24514    
+## Wholesaler      1   203683  203683   5.9647   0.01543 *  
+## Residuals     208  7102861   34148                       
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+</div>
+<div id="adding-all-of-the-factors-together-there-is-a-grand-total-of-2641.30-for-the-diamond-the-professor-wants-to-buy." class="section level2">
+<h2>Adding all of the factors together, there is a grand total of $2641.30 for the diamond the professor wants to buy.</h2>
+</div>
+<div id="bootstrap-validation" class="section level2">
+<h2>Bootstrap Validation</h2>
+<pre class="r"><code>set.seed(1)
+head(df1)</code></pre>
+<pre><code>##   Carat Colour Clarity Cut Certification Polish Symmetry Price Wholesaler
+## 1  0.92      I     SI2   G           AGS      V        V  3000          1
+## 2  0.92      I     SI2   V           AGS      G        G  3000          1
+## 3  0.82      F     SI2   I           GIA      X        X  3004          1
+## 4  0.81      G     SI1   I           GIA      X        V  3004          1
+## 5  0.90      J     VS2   V           GIA      V        V  3006          1
+## 6  0.87      F     SI2   I           AGS      G        V  3007          1</code></pre>
+<pre class="r"><code>dim(df1)</code></pre>
+<pre><code>## [1] 240   9</code></pre>
+<pre class="r"><code>train &lt;- sample(240, 120)
+head(train)</code></pre>
+<pre><code>## [1]  68 167 129 162 215  43</code></pre>
+</div>
+<div id="boostrap-for-carat-and-price" class="section level2">
+<h2>Boostrap for Carat and Price</h2>
+<pre class="r"><code>boot.fn &lt;- function(data, index) {
+  return(coef(lm(Price~Carat, data = df1, subset = index)))
+}
+boot.fn(Auto, 1:240)</code></pre>
+<pre><code>## (Intercept)       Carat 
+##   3740.9843   -980.6041</code></pre>
+<pre class="r"><code>set.seed(1)
+boot.fn(df1, sample(240, 240, replace = T))</code></pre>
+<pre><code>## (Intercept)       Carat 
+##    3751.822   -1002.177</code></pre>
+<pre class="r"><code>boot(df1, boot.fn, 100)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df1, statistic = boot.fn, R = 100)
+## 
+## 
+## Bootstrap Statistics :
+##      original    bias    std. error
+## t1* 3740.9843  15.99046    174.6983
+## t2* -980.6041 -15.51681    182.1766</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df1, boot.fn, 100)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre class="r"><code>boot.fn &lt;- function(data, index) {
+  return(coef(lm(Price~Carat, data = df1, subset = index)))
+}
+boot.fn(df1, 1:220)</code></pre>
+<pre><code>## (Intercept)       Carat 
+##    3802.918   -1046.850</code></pre>
+<pre class="r"><code>boot(df1, boot.fn, 1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df1, statistic = boot.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##      original    bias    std. error
+## t1* 3740.9843  11.59247    160.6828
+## t2* -980.6041 -13.56441    168.0413</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df1, boot.fn, 1000)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-12-2.png" width="672" /></p>
+</div>
+<div id="bootstrap-for-colour-and-price" class="section level2">
+<h2>Bootstrap for Colour and Price</h2>
+<pre class="r"><code>boot.fn &lt;- function(data, index) {
+  return(coef(lm(Price~Colour, data = df1, subset = index)))
+}
+boot.fn(Auto, 1:240)</code></pre>
+<pre><code>## (Intercept)     ColourE     ColourF     ColourG     ColourH     ColourI 
+##   2952.9333   -124.5487   -239.6833   -140.4817   -198.1402   -174.8778 
+##     ColourJ     ColourK     ColourL 
+##   -146.3583   -322.3407   -584.4333</code></pre>
+<pre class="r"><code>set.seed(1)
+boot.fn(df1, sample(240, 240, replace = T))</code></pre>
+<pre><code>## (Intercept)     ColourE     ColourF     ColourG     ColourH     ColourI 
+##  2874.60000    28.06667  -139.93333  -181.63226   -61.56970  -102.28182 
+##     ColourJ     ColourK     ColourL 
+##  -103.92432  -180.10000  -559.60000</code></pre>
+<pre class="r"><code>boot(df1, boot.fn, 100)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df1, statistic = boot.fn, R = 100)
+## 
+## 
+## Bootstrap Statistics :
+##      original     bias    std. error
+## t1* 2952.9333  4.5395183    46.22484
+## t2* -124.5487 -4.7996703    78.94899
+## t3* -239.6833 -2.9046662    93.73425
+## t4* -140.4817 -4.9221111    81.07984
+## t5* -198.1402 -8.9113252    84.70541
+## t6* -174.8778 -2.6936958    68.54678
+## t7* -146.3583  0.8396408    73.29905
+## t8* -322.3407  4.9404381    79.80381
+## t9* -584.4333 -8.5983083   115.24889</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df1, boot.fn, 100)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code>boot.fn &lt;- function(data, index) {
+  return(coef(lm(Price~Colour, data = df1, subset = index)))
+}
+boot.fn(df1, 1:220)</code></pre>
+<pre><code>## (Intercept)     ColourE     ColourF     ColourG     ColourH     ColourI 
+##   3038.5455   -203.0871   -329.5455   -223.5455   -283.7524   -260.4899 
+##     ColourJ     ColourK     ColourL 
+##   -224.4597   -419.3371   -749.8455</code></pre>
+<pre class="r"><code>boot(df1, boot.fn, 1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df1, statistic = boot.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##      original       bias    std. error
+## t1* 2952.9333  0.008243498    49.71093
+## t2* -124.5487  2.096002715    79.74241
+## t3* -239.6833 -1.731007443    86.66330
+## t4* -140.4817 -0.368393795    80.45138
+## t5* -198.1402 -5.638687079    89.14197
+## t6* -174.8778 -0.086400358    83.38398
+## t7* -146.3583 -2.151230868    77.91441
+## t8* -322.3407 -1.222242952    77.48475
+## t9* -584.4333  2.555840987    98.63602</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df1, boot.fn, 1000)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
+</div>
+<div id="boostrap-for-clarity-and-price" class="section level2">
+<h2>Boostrap for Clarity and Price</h2>
+<pre class="r"><code>boot.fn &lt;- function(data, index) {
+  return(coef(lm(Price~Clarity, data = df1, subset = index)))
+}
+boot.fn(Auto, 1:240)</code></pre>
+<pre><code>## (Intercept)   ClarityI2  ClaritySI1  ClaritySI2  ClaritySI3  ClarityVS1 
+## 2622.911392 -280.982821  376.607126  368.011685   -3.526777  431.713608 
+##  ClarityVS2 
+##  380.517179</code></pre>
+<pre class="r"><code>set.seed(1)
+boot.fn(df1, sample(240, 240, replace = T))</code></pre>
+<pre><code>## (Intercept)   ClarityI2  ClaritySI1  ClaritySI2  ClaritySI3  ClarityVS1 
+##  2627.88312  -311.94562   372.75325   333.90793    30.46982   419.51688 
+##  ClarityVS2 
+##   328.11688</code></pre>
+<pre class="r"><code>boot(df1, boot.fn, 100)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = df1, statistic = boot.fn, R = 100)
+## 
+## 
+## Bootstrap Statistics :
+##        original      bias    std. error
+## t1* 2622.911392  4.20510695    39.02084
+## t2* -280.982821 -9.09621901    60.46483
+## t3*  376.607126 -1.42275166    47.84533
+## t4*  368.011685  0.09486799    46.83047
+## t5*   -3.526777  1.72671938   100.75521
+## t6*  431.713608 -7.14706010    40.29867
+## t7*  380.517179 -5.03786566    82.30947</code></pre>
+<pre class="r"><code>boot.out &lt;- boot(df1, boot.fn, 100)
+plot(boot.out)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="i-did-a-boostrap-model-for-clarity-colour-and-carat-becuase-those-are-the-three-most-important-factors-of-the-pricing." class="section level2">
+<h2>I did a boostrap model for Clarity, Colour and Carat becuase those are the three most important factors of the pricing.</h2>
+</div>
+</div>
