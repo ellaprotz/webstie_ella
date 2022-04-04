@@ -12,7 +12,6 @@ library(tidyverse)
 library(boot)
 library(patchwork)
 df <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Professor_Proposes_Data_Final.csv')
-df
 ```
 
 ## Exploratory Data Analysis
@@ -100,7 +99,6 @@ symmetry <- ggplot (df, aes(x = Symmetry, y = Price)) +
 ```{r}
 df1 <- df %>%
   filter(Wholesaler!=3)
-df1
 ```
 
 # Manipulating 
