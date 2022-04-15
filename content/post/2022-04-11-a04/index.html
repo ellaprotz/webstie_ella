@@ -1,0 +1,101 @@
+---
+title: A04
+author: R package build
+date: '2022-04-11'
+slug: a04
+categories: []
+tags: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="make-a-visualization-that-more-accurately-tells-the-story" class="section level1">
+<h1>Make a visualization that more accurately tells the story</h1>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+## ✓ tibble  3.1.6     ✓ dplyr   1.0.8
+## ✓ tidyr   1.2.0     ✓ stringr 1.4.0
+## ✓ readr   2.1.2     ✓ forcats 0.5.1</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>data &lt;- tribble(
+  ~Date, ~No.Mask, ~Mask,
+  &quot;2020-7-12&quot;, 9.8, 25.5,
+  &quot;2020-7-13&quot;, 9.0, 19.9,
+  &quot;2020-7-14&quot;, 9.5, 19.8,
+  &quot;2020-7-15&quot;, 9.8, 20.5,
+  &quot;2020-7-16&quot;, 9.7, 20.0,
+  &quot;2020-7-17&quot;, 9.7, 20.0,
+  &quot;2020-7-18&quot;, 9.0, 20.5,
+  &quot;2020-7-19&quot;, 8.8, 20.1,
+  &quot;2020-7-20&quot;, 8.8, 20.5,
+  &quot;2020-7-21&quot;, 8.9, 21.5,
+  &quot;2020-7-22&quot;, 8.7, 19.9,
+  &quot;2020-7-23&quot;, 9.9, 19.9,
+  &quot;2020-7-24&quot;, 9.9, 20.5,
+  &quot;2020-7-25&quot;, 10.1, 19.0, 
+  &quot;2020-7-26&quot;, 9.7, 19.6,
+  &quot;2020-7-27&quot;, 9.71, 17.0,
+  &quot;2020-7-28&quot;, 9.74, 16.4,
+  &quot;2020-7-29&quot;, 10.1, 16.7, 
+  &quot;2020-7-30&quot;, 9.0, 16.8,
+  &quot;2020-7-31&quot;, 9.0, 16.0,
+  &quot;2020-8-1&quot;, 9.2, 16.2,
+  &quot;2020-8-2&quot;, 9.0, 16.0,
+  &quot;2020-8-3&quot;, 9.4, 16.1
+)  %&gt;%
+  dplyr::mutate(
+    dplyr::across(Date, as.Date)
+  )
+data</code></pre>
+<pre><code>## # A tibble: 23 × 3
+##    Date       No.Mask  Mask
+##    &lt;date&gt;       &lt;dbl&gt; &lt;dbl&gt;
+##  1 2020-07-12     9.8  25.5
+##  2 2020-07-13     9    19.9
+##  3 2020-07-14     9.5  19.8
+##  4 2020-07-15     9.8  20.5
+##  5 2020-07-16     9.7  20  
+##  6 2020-07-17     9.7  20  
+##  7 2020-07-18     9    20.5
+##  8 2020-07-19     8.8  20.1
+##  9 2020-07-20     8.8  20.5
+## 10 2020-07-21     8.9  21.5
+## # … with 13 more rows</code></pre>
+<pre class="r"><code>ggplot()+
+  geom_line(data = data, mapping = aes(x=Date, y=No.Mask), color = &quot;blue&quot;)+
+  geom_line(data = data, mapping = aes(x=Date, y=Mask), color=&quot;orange&quot;)+
+  labs(title = &quot;Kansas Covid-19 7-Day Rolling Average of Daily Cases /Per 100K Population&quot;, 
+       subtitle = &quot;Mask Counties (orange) vs No-Mask Counties (blue)&quot;,
+         x=&quot;Date&quot;, 
+       y=&quot;Case Average of Daily Cases Per 100K People&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="what-message-is-more-clear-in-your-visualization-than-it-was-in-the-original-visualization" class="section level1">
+<h1>What message is more clear in your visualization than it was in the original visualization?</h1>
+<div id="a-message-that-is-more-clear-in-my-visualiszation-is-that-counties-that-were-no-mask-had-a-smaller-rolling-average-of-covid-cases-that-were-less-than-the-counties-that-had-masks.-something-to-be-careful-of-for-this-is-taking-into-account-how-big-the-counties-are-if-there-is-a-large-city-there-is-a-higher-rate-of-transmission-so-therefor-there-will-be-more-covid-cases-which-is-not-shown.-you-cant-get-a-really-accurate-picture-of-how-mask-wewaring-will-effect-the-daily-average-of-cases.-however-based-on-the-graph-there-is-a-more-clear-visualizaion-of-the-case-average.-the-first-graph-had-different-intervals-of-that-the-cases-were-measured-on-so-therefor-the-lines-overlapped-and-would-give-misinformation-if-one-was-not-reading-the-graph-axis-carefully." class="section level3">
+<h3>A message that is more clear in my visualiszation is that counties that were No-Mask had a smaller rolling average of covid cases that were less than the counties that had masks. Something to be careful of for this is taking into account how big the counties are, if there is a large city, there is a higher rate of transmission so therefor there will be more covid cases, which is not shown. You can’t get a really accurate picture of how mask wewaring will effect the daily average of cases. However, based on the graph, there is a more clear visualizaion of the case average. The first graph had different intervals of that the cases were measured on, so therefor the lines overlapped and would give misinformation if one was not reading the graph axis carefully.</h3>
+</div>
+</div>
+<div id="what-useful-information-do-these-data-and-your-visualization-tell-us-about-mask-wearing-and-covid" class="section level1">
+<h1>What useful information do these data and your visualization tell us about mask wearing and COVID?</h1>
+<div id="some-useful-things-that-this-visualization-tells-about-mask-wearing-is-that-by-wearing-a-mass-the-rate-of-transmission-decreases-so-therefor-the-daily-cases-per-100k-of-people-will-decreases.-the-masks-counties-although-lower-plateaued-and-did-not-have-much-change-in-the-case-average." class="section level3">
+<h3>Some useful things that this visualization tells about mask wearing is that by wearing a mass, the rate of transmission decreases, so therefor the daily cases per 100K of people will decreases. The masks counties, although lower, plateaued and did not have much change in the case average.</h3>
+</div>
+</div>
+<div id="review-any-one-of-the-following-videos-in-about-200-words" class="section level1">
+<h1>Review any one of the following videos in about 200 words</h1>
+<div id="i-watched-the-video-how-im-fighting-bias-in-algorithms---the-speaker-was-joy-and-she-talked-about-her-experience-with-algorithmic-bias-in-machine-learning.-she-is-a-person-of-color-and-facial-recognition-softwares-could-not-identify-her-face-but-could-identify-the-white-mask.-this-led-to-her-realizing-that-there-was-algorithmic-bias.-algorithmic-bias-can-travel-as-fast-as-it-takes-to-download-a-few-files.-in-this-scenario-computers-are-given-training-sets-to-teach-them-what-is-and-isnt-a-face.-if-training-sets-are-not-diverse-this-leads-to-any-face-that-deviates-too-much-from-that-established-norm-then-it-is-harder-to-establish.-training-sets-are-created-by-humans-and-by-that-there-are-opportunities-to-create-more-diversity.-algorithmic-bias-can-lead-to-discriminatory-biases-and-it-can-impact-the-lives-of-many-people.-how-to-fix-this-we-can-create-inclusive-code-and-employ-a-wide-spectrum-of-people-that-will-be-able-to-check-each-others-work-and-blindspots.-how-people-code-also-matters-by-developing-systems-that-factor-in-fairness.-the-goal-of-creating-these-algorithms-should-be-about-social-change-versus-wealth.-a-goal-is-to-identify-bias-but-also-audit-existing-software.-creating-more-inclusive-training-sets-and-developing-conscientious-and-thinking-of-the-social-impact-of-the-technology-developed." class="section level3">
+<h3>I watched the video “How I’m Fighting Bias in Algorithms” - The speaker was Joy and she talked about her experience with algorithmic bias in machine learning. She is a person of color, and facial recognition softwares could not identify her face, but could identify the white mask. This led to her realizing that there was algorithmic bias. Algorithmic bias can travel as fast as it takes to download a few files. In this scenario, computers are given training sets to teach them what is and isn’t a face. If training sets are not diverse this leads to any face that deviates too much from that established norm, then it is harder to establish. Training sets are created by humans, and by that, there are opportunities to create more diversity. Algorithmic bias can lead to discriminatory biases, and it can impact the lives of many people. How to fix this? We can create inclusive code and employ a wide spectrum of people that will be able to check each other’s work and blindspots. How people code also matters by developing systems that factor in fairness. The goal of creating these algorithms should be about social change versus wealth. A goal is to identify bias, but also audit existing software. Creating more inclusive training sets and developing conscientious, and thinking of the social impact of the technology developed.</h3>
+</div>
+</div>
+<div id="datacamp-course" class="section level1">
+<h1>Datacamp Course</h1>
+<div class="figure">
+<img src="images/Datacamp.png" alt="" />
+<p class="caption">Datacamp</p>
+</div>
+</div>

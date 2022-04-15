@@ -1,0 +1,73 @@
+---
+title: A04
+author: R package build
+date: '2022-04-11'
+slug: a04
+categories: []
+tags: []
+---
+
+# Make a visualization that more accurately tells the story
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- tribble(
+  ~Date, ~No.Mask, ~Mask,
+  "2020-7-12", 9.8, 25.5,
+  "2020-7-13", 9.0, 19.9,
+  "2020-7-14", 9.5, 19.8,
+  "2020-7-15", 9.8, 20.5,
+  "2020-7-16", 9.7, 20.0,
+  "2020-7-17", 9.7, 20.0,
+  "2020-7-18", 9.0, 20.5,
+  "2020-7-19", 8.8, 20.1,
+  "2020-7-20", 8.8, 20.5,
+  "2020-7-21", 8.9, 21.5,
+  "2020-7-22", 8.7, 19.9,
+  "2020-7-23", 9.9, 19.9,
+  "2020-7-24", 9.9, 20.5,
+  "2020-7-25", 10.1, 19.0, 
+  "2020-7-26", 9.7, 19.6,
+  "2020-7-27", 9.71, 17.0,
+  "2020-7-28", 9.74, 16.4,
+  "2020-7-29", 10.1, 16.7, 
+  "2020-7-30", 9.0, 16.8,
+  "2020-7-31", 9.0, 16.0,
+  "2020-8-1", 9.2, 16.2,
+  "2020-8-2", 9.0, 16.0,
+  "2020-8-3", 9.4, 16.1
+)  %>%
+  dplyr::mutate(
+    dplyr::across(Date, as.Date)
+  )
+data
+```
+
+```{r}
+ggplot()+
+  geom_line(data = data, mapping = aes(x=Date, y=No.Mask), color = "blue")+
+  geom_line(data = data, mapping = aes(x=Date, y=Mask), color="orange")+
+  labs(title = "Kansas Covid-19 7-Day Rolling Average of Daily Cases /Per 100K Population", 
+       subtitle = "Mask Counties (orange) vs No-Mask Counties (blue)",
+         x="Date", 
+       y="Case Average of Daily Cases Per 100K People")
+
+```
+
+# What message is more clear in your visualization than it was in the original visualization?
+
+### A message that is more clear in my visualiszation is that counties that were No-Mask had a smaller rolling average of covid cases that were less than the counties that had masks. Something to be careful of for this is taking into account how big the counties are, if there is a large city, there is a higher rate of transmission so therefor there will be more covid cases, which is not shown. You can't get a really accurate picture of how mask wewaring will effect the daily average of cases. However,  based on the graph, there is a more clear visualizaion of the case average. The first graph had different intervals of that the cases were measured on, so therefor the lines overlapped and would give misinformation if one was not reading the graph axis carefully. 
+
+# What useful information do these data and your visualization tell us about mask wearing and COVID? 
+
+### Some useful things that this visualization tells about mask wearing is that by wearing a mass, the rate of transmission decreases, so therefor the daily cases per 100K of people will decreases. The masks counties, although lower, plateaued and did not have much change in the case average. 
+
+# Review any one of the following videos in about 200 words
+
+### I watched the video “How I’m Fighting Bias in Algorithms” - The speaker was Joy and she talked about her experience with algorithmic bias in machine learning. She is a person of color, and facial recognition softwares could not identify her face, but could identify the white mask. This led to her realizing that there was algorithmic bias. Algorithmic bias can travel as fast as it takes to download a few files. In this scenario, computers are given training sets to teach them what is and isn't a face. If training sets are not diverse this leads to any face that deviates too much from that established norm, then it is harder to establish. Training sets are created by humans, and by that, there are opportunities to create more diversity. Algorithmic bias can lead to discriminatory biases, and it can impact the lives of many people. How to fix this? We can create inclusive code and employ a wide spectrum of people that will be able to check each other's work and blindspots. How people code also matters by developing systems that factor in fairness. The goal of creating these algorithms should be about social change versus wealth. A goal is to identify bias, but also audit existing software. Creating more inclusive training sets and developing conscientious, and thinking of the social impact of the technology developed.  
+
+# Datacamp Course
+
+![Datacamp](images/Datacamp.png)

@@ -1,0 +1,452 @@
+---
+title: project
+author: R package build
+date: '2022-04-05'
+slug: project
+categories: []
+tags: []
+---
+
+```{r}
+library(tidyverse)
+library(readr)
+library(psych)
+bank_churns <- read.csv(file = 'https://raw.githubusercontent.com/ellaprotz/webstie_ella/master/Bank_Churn.csv')
+bank_churns
+```
+
+## Exploratory Data Analysis 
+
+
+
+Removing NAs
+
+```{r}
+str(bank_churns)
+bank_churns <- na.omit(bank_churns)
+```
+
+
+Running an EDA: Numeric Variables
+
+# Summary of Credit Score 
+```{r}
+sum_cs <- summary(bank_churns$CreditScore)
+sum_cs
+```
+
+```{r}
+describe(sum_cs, fast = TRUE)
+```
+
+# Plot Credit Score 
+```{r}
+ggplot(bank_churns, aes(x = CreditScore)) +
+geom_histogram(binwidth = 1, fill = "#D872FB") +
+labs(title = "Credit Scores", x = "Score", y = "Frequency")
+```
+
+# Boxplot of Credit Score
+```{r}
+boxplot(bank_churns$CreditScore, main = "Credit Scores of Customers")
+```
+
+# Summary on Age
+```{r}
+sum_age <- summary(bank_churns$Age)
+sum_age
+```
+
+```{r}
+describe(sum_age, fast = TRUE)
+```
+
+
+# Plot Age
+```{r}
+ggplot(bank_churns, aes(x = Age)) +
+geom_histogram(binwidth = 1, fill = "#619CFF") +
+labs(title = "Age of Customers", x = "Age", y = "Frequency")
+```
+
+# Summary of Tenure
+```{r}
+sum_ten <- summary(bank_churns$Tenure)
+sum_ten
+```
+
+```{r}
+describe(sum_ten, fast = TRUE)
+```
+
+
+#Plot Tenures
+```{r}
+ggplot(bank_churns, aes(x = Tenure)) +
+geom_histogram(binwidth = 1, fill = "seagreen3") +
+labs(title = "Tenures", x = "Number of Tenures", y = "Frequency")
+```
+
+# Boxplot of Tenures
+```{r}
+boxplot(bank_churns$Tenure, main = "Tenures")
+```
+
+# Summary of Balance
+```{r}
+sum_bal <- summary(bank_churns$Balance)
+sum_bal
+```
+
+```{r}
+describe(sum_bal, fast = TRUE)
+```
+
+# Plot Balance
+```{r}
+boxplot(bank_churns$Balance, main = "Balances of Customers")
+```
+
+# Summary of Salary
+```{r}
+sum_sal <- summary(bank_churns$EstimatedSalary)
+sum_sal
+```
+
+```{r}
+describe(sum_sal, fast = TRUE)
+```
+
+# Plot Salary
+```{r}
+boxplot(bank_churns$EstimatedSalary, main = "Estimated Salaries of Customers")
+```
+
+Running an EDA: Categorical Variables
+
+# Summary of Geography
+```{r}
+sum_geo <- bank_churns %>%
+count(Geography)
+```
+
+```{r}
+sum_geo
+```
+
+
+# Plot of Geography
+```{r}
+ggplot(bank_churns, aes(x = Geography)) +
+geom_bar(fill = "orange2")
+```
+
+
+# Summary of Gender
+```{r}
+sum_gen <- bank_churns %>%
+count(Gender)
+```
+
+```{r}
+sum_gen
+```
+
+
+# Plot Gender
+```{r}
+ggplot(bank_churns, aes(x = Gender)) +
+geom_bar(fill = "purple2")
+```
+
+
+# Summary: Number of Products
+```{r}
+sum_numpro <- bank_churns %>%
+count(NumOfProducts)
+```
+
+```{r}
+sum_numpro
+```
+
+# Plot Number of Products
+```{r}
+ggplot(bank_churns, aes(x = NumOfProducts)) +
+geom_bar(fill = "#F8766D")
+```
+
+
+# Summary of Owning a Credit Card
+```{r}
+sum_crcard <- bank_churns %>%
+count(HasCrCard)
+```
+
+```{r}
+sum_crcard
+```
+
+
+# Plot Credit Card Owners vs Non-Owners
+```{r}
+ggplot(bank_churns, aes(x = HasCrCard)) +
+  geom_bar(fill = "gold2")
+```
+
+
+# Summary of Active Members
+```{r}
+sum_active <- bank_churns %>%
+count(IsActiveMember)
+```
+
+```{r}
+sum_active
+```
+
+
+# Plot Active vs Non-Active Members 
+```{r}
+ggplot(bank_churns, aes(x = IsActiveMember)) +
+  geom_bar(fill = "royalblue3")
+```
+
+
+# Summary of Exited
+```{r}
+sum_exit <- bank_churns %>%
+count(Exited)
+```
+
+```{r}
+sum_exit
+```
+
+
+# Plot Exited vs. Not
+```{r}
+ggplot(bank_churns, aes(x = Exited)) +
+  geom_bar(fill = "plum3")
+```
+
+
+## Balance the Dataset
+```{r}
+library(ggplot2)
+library(knitr)
+suppressMessages(library("dplyr"))
+suppressMessages(library("unbalanced"))
+```
+
+```{r}
+head(bank_churns)
+```
+
+```{r}
+bank_churns$IsActiveMember<-as.factor(bank_churns$IsActiveMember)
+levels(bank_churns$IsActiveMember) <- c('Inactive', 'Active') 
+summary(bank_churns$IsActiveMember)
+```
+
+```{r}
+ggplot(data = bank_churns, aes(fill = IsActiveMember)) +
+geom_bar(aes(x = IsActiveMember)) # pretty balanced
+```
+
+```{r}
+bank_churns$Exited<-as.factor(bank_churns$Exited)
+levels(bank_churns$Exited) <- c('Present', "Exited") 
+summary(bank_churns$Exited) # definitely imbalanced
+```
+
+```{r}
+options(scipen=10000)
+ggplot(data = bank_churns, aes(fill = Exited)) +
+geom_bar(aes(x = Exited))
+```
+
+### Undersampling
+```{r}
+predictor_var <- bank_churns[,-13] 
+response_var <- bank_churns$Exited
+```
+
+```{r}
+levels(response_var) <- c('0', '1')
+```
+
+
+# Undersampling
+# install.packages("unbalanced")
+```{r}
+library("unbalanced")
+undersampled_data <- ubBalance(predictor_var, 
+                               response_var, 
+                               type='ubUnder',         # Option for undersampling
+                               verbose = TRUE)
+```
+
+```{r}
+undersampled_combined <- cbind(undersampled_data$X, undersampled_data$Y)
+undersampled_combined
+names(undersampled_combined)[names(undersampled_combined) == "undersampled_data$Y"] <- "Exited"
+levels(undersampled_combined$Exited) <- c('Present', 'Exited')
+```
+
+```{r}
+ggplot(data = undersampled_combined, aes(fill = Exited))+
+    geom_bar(aes(x = Exited))
+```
+
+
+### Oversampling
+```{r}
+oversampled_data <- ubBalance(predictor_var,  
+                              response_var, 
+                              type='ubOver',         
+                              k = 0,                 # 0 => 50:50 split
+                              verbose = TRUE)
+```
+
+```{r}
+oversampled_combined <- cbind(oversampled_data$X,    
+                               oversampled_data$Y)
+```
+
+```{r}
+names(oversampled_combined)[names(oversampled_combined) == "oversampled_data$Y"] <- "Exited"
+levels(oversampled_combined$Exited) <- c('Present', 'Exited')
+```
+
+```{r}
+ggplot(data = oversampled_combined, aes(fill = Exited))+
+    geom_bar(aes(x = Exited))
+```
+
+
+# Building a Logistic Model 
+
+```{r}
+bank_churns$CustomerId <- NULL
+bank_churns$RowNumber <- NULL
+```
+
+
+```{r}
+sapply(bank_churns, function (x) length(unique(x)))
+```
+
+```{r}
+
+```
+
+
+
+
+
+```{r}
+bank_churns$Geography <- as.factor(bank_churns$Geography)
+bank_churns$Gender <- as.factor(bank_churns$Gender)
+bank_churns$HasCrCard <- as.factor(bank_churns$HasCrCard)
+bank_churns$IsActiveMember <- as.factor(bank_churns$IsActiveMember)
+
+str(bank_churns)
+```
+
+```{r}
+model <- lm(Exited~., data =bank_churns)
+summary(model)
+```
+
+```{r}
+oversampled_combined$CustomerId <- NULL
+oversampled_combined$RowNumber <- NULL
+```
+
+
+```{r}
+oversampled_combined$Geography <- as.factor(oversampled_combined$Geography)
+oversampled_combined$Gender <- as.factor(oversampled_combined$Gender)
+oversampled_combined$HasCrCard <- as.factor(oversampled_combined$HasCrCard)
+oversampled_combined$IsActiveMember <- as.factor(oversampled_combined$IsActiveMember)
+str(oversampled_combined)
+```
+
+```{r}
+p
+```
+
+```{r}
+plot(model1)
+```
+
+
+```{r}
+model2 <- glm(Exited~., family = binomial, data=bank_churns)
+summary(model2)
+```
+
+```{r}
+bank_churns
+```
+
+
+```{r}
+prop.table(table(bank_churns$Exited))
+```
+
+```{r}
+test_case <- as.data.frame(bank_churns[1,])
+test_case
+predict(model2, newdata = test_case)
+predict(model2, newdata = test_case, type = "response")
+```
+
+```{r}
+
+```
+
+
+
+
+```{r}
+model2 <- glm(Exited~., family = binomial, data=bank_churns)
+prediction1 <- predict(model2, newdata = bank_churns, type = "response")
+pred_cutoff_15 <- ifelse(prediction1 > 0.15, 1, 0)
+table(bank_churns$Exited, pred_cutoff_15)
+```
+
+```{r}
+pred_log_regression_model <- predict(model2, 
+                                     newdata = bank_churns,
+                                     type = "response")
+model1 <- glm(Exited~., family = binomial(link = probit), data = bank_churns)
+model1
+model1.2 <- glm(Exited~., family = binomial(link = cloglog), data = bank_churns)
+model1.2
+```
+
+
+```{r}
+pred_full_20 <- ifelse(pred_log_regression_model > cutoff, 1, 0)
+true_and_predval <- cbind(bank_churns$Exited, pred_full_20)
+true_and_predval
+```
+
+```{r}
+library(caret)
+```
+
+```{r}
+test <- createDataPartition( bank_churns$Exited, p = .2, list = FALSE )
+data_train <- data[ -test, ]
+data_test  <- data[ test, ]
+rm(data)
+```
+
+```{r}
+model_glm <- glm( Exited ~ . , data = data_train, family = binomial )
+summary_glm <- summary(model_glm)
+```
+
